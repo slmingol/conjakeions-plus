@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  connections-game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: connections-game
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - connections-network
+
+networks:
+  connections-network:
+    driver: bridge
