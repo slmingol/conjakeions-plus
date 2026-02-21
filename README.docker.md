@@ -1,4 +1,4 @@
-# Docker Setup for Connections Game
+# Docker Setup for Cojakeons+
 
 ## Quick Start
 
@@ -67,22 +67,22 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ### Build production image
 ```bash
-docker build -t connections-game:latest .
+docker build -t cojakeons-plus:latest .
 ```
 
 ### Run production container
 ```bash
-docker run -d -p 3000:80 --name connections-game connections-game:latest
+docker run -d -p 3000:80 --name cojakeons-plus cojakeons-plus:latest
 ```
 
 ### Build development image
 ```bash
-docker build -f Dockerfile.dev -t connections-game:dev .
+docker build -f Dockerfile.dev -t cojakeons-plus:dev .
 ```
 
 ### Run development container
 ```bash
-docker run -d -p 3000:3000 -v $(pwd):/app -v /app/node_modules --name connections-game-dev connections-game:dev
+docker run -d -p 3000:3000 -v $(pwd):/app -v /app/node_modules --name cojakeons-plus-dev cojakeons-plus:dev
 ```
 
 ## Configuration
@@ -116,7 +116,7 @@ ports:
 ### Container won't start
 Check logs:
 ```bash
-docker-compose logs connections-game
+docker-compose logs cojakeons-plus
 ```
 
 ### Rebuild from scratch

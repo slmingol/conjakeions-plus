@@ -1,7 +1,7 @@
 {
-  "name": "connections-game-clone",
+  "name": "cojakeons-plus",
   "version": "1.0.0",
-  "description": "A clean implementation of the NYT Connections word puzzle game",
+  "description": "Cojakeons+ - A word puzzle game with 915+ unique puzzles",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",

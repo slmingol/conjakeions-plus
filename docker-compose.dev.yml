@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  connections-game-dev:
+  cojakeons-plus-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: connections-game-dev
+    container_name: cojakeons-plus-dev
     ports:
       - "3000:3000"
     volumes:
@@ -16,10 +16,10 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
     networks:
-      - connections-network
+      - cojakeons-network
     stdin_open: true
     tty: true
 
 networks:
-  connections-network:
+  cojakeons-network:
     driver: bridge
