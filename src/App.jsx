@@ -184,7 +184,7 @@ function App() {
   return (
     <div className="App">
       <header className="header">
-        <h1>Connections</h1>
+        <h1>Conjakeions+</h1>
         <p className="subtitle">
           Create four groups of four! 
           <span className="puzzle-info-inline">
@@ -321,7 +321,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>Cojakeons+ v{packageJson.version} © 2026</p>
+        <p>Conjakeions+ v{packageJson.version} © 2026</p>
       </footer>
     </div>
   );

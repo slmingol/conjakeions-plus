@@ -1,7 +1,7 @@
 {
   "name": "cojakeons-plus",
   "version": "1.1.0",
-  "description": "Cojakeons+ - A word puzzle game with 915+ unique puzzles",
+  "description": "Conjakeions+ - A word puzzle game with 915+ unique puzzles",
   "private": true,
   "type": "module",
   "dependencies": {
