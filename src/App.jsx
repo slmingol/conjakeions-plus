@@ -14,7 +14,7 @@ function App() {
   const { newVersionAvailable, reload } = useVersionCheck();
   const { stats, recordWin, recordLoss, recordReveal, resetStats, getWinRate, getAverageMistakes } = useStats();
   const { savedState, saveState, clearState } = useGameState();
-  const { recordAttempt, recordCompletion, getPuzzleStats, hasPlayedBefore, hasWonBefore } = usePuzzleHistory();
+  const { recordAttempt, recordCompletion, getPuzzleStats, hasPlayedBefore, hasWonBefore, getTotalPuzzlesAttempted, getTotalPuzzlesWon } = usePuzzleHistory();
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(savedState.currentPuzzleIndex);
   const [puzzleNumberInput, setPuzzleNumberInput] = useState('');
   const [words, setWords] = useState([]);
@@ -468,6 +468,8 @@ function App() {
           stats={stats}
           getWinRate={getWinRate}
           getAverageMistakes={getAverageMistakes}
+          totalPuzzlesAttempted={getTotalPuzzlesAttempted()}
+          totalPuzzlesWon={getTotalPuzzlesWon()}
           onClose={() => setShowStats(false)}
           onReset={() => {
             if (window.confirm('Are you sure you want to reset all statistics? This cannot be undone.')) {
