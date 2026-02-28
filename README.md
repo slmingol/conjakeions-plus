@@ -1,10 +1,10 @@
-# Cojakeons+
+# Conjakeions+
 
 A word puzzle game with 915+ unique puzzles inspired by Connections.
 
 ## About
 
-Cojakeons+ is a word puzzle game where players must find groups of four words that share something in common. The game features:
+Conjakeions+ is a word puzzle game where players must find groups of four words that share something in common. The game features:
 
 - 16 words arranged in a 4x4 grid
 - 4 categories of words to discover
