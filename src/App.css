@@ -275,18 +275,18 @@
 .mistakes-container {
   display: block;
   text-align: center;
-  margin: 1.5rem auto 1rem;
-  width: 100%;
+  margin: 1.5rem -1rem 1rem;
+  padding: 0 1rem;
+  width: calc(100% + 2rem);
+  margin-left: -1rem;
 }
 
 .mistakes {
   font-size: 1rem;
   color: #5a594e;
   font-weight: 600;
-  margin: 0 auto;
+  margin: 0;
   padding: 0;
-  display: block;
-  text-align: center;
 }
 
 .reveal-container {
