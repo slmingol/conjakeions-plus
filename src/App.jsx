@@ -292,9 +292,9 @@ function App() {
         {/* Mistakes indicator */}
         {!gameOver && (
           <div className="mistakes-container">
-            <div className="mistakes">
+            <p className="mistakes">
               Mistakes Remaining: {MAX_MISTAKES - mistakes}
-            </div>
+            </p>
           </div>
         )}
 
