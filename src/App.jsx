@@ -43,7 +43,8 @@ function App() {
 
   // Check if game is won
   useEffect(() => {
-    if (solved.length === PUZZLE_DATA.length) {
+    const actuallySolved = solved.filter(cat => !cat.revealed).length;
+    if (actuallySolved === PUZZLE_DATA.length) {
       setGameOver(true);
       setMessage('🎉 Congratulations! You won!');
     }
