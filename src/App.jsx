@@ -50,7 +50,7 @@ function App() {
     // Check if we're resuming a saved game
     const isResumingSavedGame = 
       savedState.currentPuzzleIndex === currentPuzzleIndex && 
-      savedState.solved.length > 0;
+      (savedState.solved.length > 0 || savedState.mistakes > 0);
     
     if (isResumingSavedGame) {
       // Restore saved state
