@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-const STATS_KEY = 'cojakeons-plus-stats';
+const STATS_KEY = 'conjakeions-plus-stats';
 
 const getDefaultStats = () => ({
   gamesPlayed: 0,

@@ -60,7 +60,7 @@ jobs:
       - name: Cleanup old Docker images
         uses: actions/delete-package-versions@v5
         with:
-          package-name: 'cojakeons-plus'
+          package-name: 'conjakeions-plus'
           package-type: 'container'
           min-versions-to-keep: 5
           delete-only-untagged-versions: false

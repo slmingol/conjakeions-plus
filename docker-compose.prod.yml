@@ -1,13 +1,13 @@
 services:
-  cojakeons-plus:
-    image: ghcr.io/slmingol/cojakeons-plus:latest
-    container_name: cojakeons-plus
+  conjakeions-plus:
+    image: ghcr.io/slmingol/conjakeions-plus:latest
+    container_name: conjakeions-plus
     ports:
       - "3000:80"
     restart: unless-stopped
     networks:
-      - cojakeons-network
+      - conjakeions-network
 
 networks:
-  cojakeons-network:
+  conjakeions-network:
     driver: bridge

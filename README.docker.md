@@ -22,7 +22,7 @@ docker-compose -f docker-compose.prod.yml up -d
 
 Access the game at: http://localhost:3000
 
-The container is automatically built and published to `ghcr.io/slmingol/cojakeons-plus:latest` on every push to main via GitHub Actions.
+The container is automatically built and published to `ghcr.io/slmingol/conjakeions-plus:latest` on every push to main via GitHub Actions.
 
 ### Production Build from Source
 Build and run the production version with nginx:
@@ -89,22 +89,22 @@ docker-compose -f docker-compose.dev.yml up --build
 
 ### Build production image
 ```bash
-docker build -t cojakeons-plus:latest .
+docker build -t conjakeions-plus:latest .
 ```
 
 ### Run production container
 ```bash
-docker run -d -p 3000:80 --name cojakeons-plus cojakeons-plus:latest
+docker run -d -p 3000:80 --name conjakeions-plus conjakeions-plus:latest
 ```
 
 ### Build development image
 ```bash
-docker build -f Dockerfile.dev -t cojakeons-plus:dev .
+docker build -f Dockerfile.dev -t conjakeions-plus:dev .
 ```
 
 ### Run development container
 ```bash
-docker run -d -p 3000:3000 -v $(pwd):/app -v /app/node_modules --name cojakeons-plus-dev cojakeons-plus:dev
+docker run -d -p 3000:3000 -v $(pwd):/app -v /app/node_modules --name conjakeions-plus-dev conjakeions-plus:dev
 ```
 
 ## Configuration
@@ -138,7 +138,7 @@ ports:
 ### Container won't start
 Check logs:
 ```bash
-docker-compose logs cojakeons-plus
+docker-compose logs conjakeions-plus
 ```
 
 ### Rebuild from scratch

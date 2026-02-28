@@ -1,17 +1,17 @@
 services:
-  cojakeons-plus:
+  conjakeions-plus:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: cojakeons-plus
+    container_name: conjakeions-plus
     ports:
       - "3000:80"
     restart: unless-stopped
     environment:
       - NODE_ENV=production
     networks:
-      - cojakeons-network
+      - conjakeions-network
 
 networks:
-  cojakeons-network:
+  conjakeions-network:
     driver: bridge

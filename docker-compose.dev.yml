@@ -1,9 +1,9 @@
 services:
-  cojakeons-plus-dev:
+  conjakeions-plus-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: cojakeons-plus-dev
+    container_name: conjakeions-plus-dev
     ports:
       - "3000:3000"
     volumes:
@@ -14,10 +14,10 @@ services:
       - NODE_ENV=development
       - CHOKIDAR_USEPOLLING=true
     networks:
-      - cojakeons-network
+      - conjakeions-network
     stdin_open: true
     tty: true
 
 networks:
-  cojakeons-network:
+  conjakeions-network:
     driver: bridge
