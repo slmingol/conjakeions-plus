@@ -273,7 +273,10 @@
 }
 
 .mistakes-container {
-  text-align: center;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
   margin: 1.5rem 0 1rem;
 }
 
