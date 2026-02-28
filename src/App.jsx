@@ -300,12 +300,6 @@ function App() {
               >
                 Clear
               </button>
-              <button 
-                onClick={handleRevealSolution}
-                className="control-button reveal-solution"
-              >
-                Reveal Solution
-              </button>
             </div>
             <button 
               onClick={handleSubmit} 
@@ -323,6 +317,12 @@ function App() {
             <div className="mistakes">
               {mistakes} Incorrect
             </div>
+            <button 
+              onClick={handleRevealSolution}
+              className="control-button reveal-solution"
+            >
+              Reveal Solution
+            </button>
           </div>
         )}
 
