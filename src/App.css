@@ -273,10 +273,8 @@
 }
 
 .mistakes-container {
-  position: relative;
-  left: 50%;
-  transform: translateX(-50%);
-  width: max-content;
+  display: grid;
+  place-items: center;
   margin: 1.5rem 0 1rem;
 }
 
