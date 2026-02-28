@@ -4,6 +4,7 @@ import puzzlesData from './puzzles.json';
 import packageJson from '../package.json';
 import { useVersionCheck } from './useVersionCheck';
 import { useStats } from './useStats';
+import { useGameState } from './useGameState';
 import StatsModal from './StatsModal';
 
 const MAX_MISTAKES = 4;
@@ -11,15 +12,16 @@ const MAX_MISTAKES = 4;
 function App() {
   const { newVersionAvailable, reload } = useVersionCheck();
   const { stats, recordWin, recordLoss, recordReveal, resetStats, getWinRate, getAverageMistakes } = useStats();
-  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(0);
+  const { savedState, saveState, clearState } = useGameState();
+  const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(savedState.currentPuzzleIndex);
   const [puzzleNumberInput, setPuzzleNumberInput] = useState('');
   const [words, setWords] = useState([]);
   const [selected, setSelected] = useState([]);
-  const [solved, setSolved] = useState([]);
-  const [mistakes, setMistakes] = useState(0);
+  const [solved, setSolved] = useState(savedState.solved);
+  const [mistakes, setMistakes] = useState(savedState.mistakes);
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
-  const [revealed, setRevealed] = useState(false);
+  const [revealed, setRevealed] = useState(savedState.revealed);
   const [showStats, setShowStats] = useState(false);
   const [statsRecorded, setStatsRecorded] = useState(false);
   
@@ -41,15 +43,33 @@ function App() {
         color: cat.color
       }))
     );
-    setWords(shuffleArray(allWords));
-    setSolved([]);
-    setSelected([]);
-    setMistakes(0);
-    setGameOver(false);
-    setMessage('');
-    setRevealed(false);
-    setStatsRecorded(false);
+    
+    // Check if we're resuming a saved game
+    const isResumingSavedGame = 
+      savedState.currentPuzzleIndex === currentPuzzleIndex && 
+      savedState.solved.length > 0;
+    
+    if (isResumingSavedGame) {
+      // Restore saved state
+      setWords(shuffleArray(allWords));
+      // solved and mistakes are already set from savedState in initial state
+    } else {
+      // Start fresh
+      setWords(shuffleArray(allWords));
+      setSolved([]);
+      setSelected([]);
+      setMistakes(0);
+      setGameOver(false);
+      setMessage('');
+      setRevealed(false);
+      setStatsRecorded(false);
+    }
   }, [currentPuzzleIndex]);
+
+  // Save game state whenever it changes
+  useEffect(() => {
+    saveState(currentPuzzleIndex, solved, mistakes, revealed, gameOver);
+  }, [currentPuzzleIndex, solved, mistakes, revealed, gameOver]);
 
   // Check if game is won
   useEffect(() => {
@@ -59,6 +79,7 @@ function App() {
       setMessage('🎉 Congratulations! You won!');
       recordWin(mistakes);
       setStatsRecorded(true);
+      clearState(); // Clear saved state on win
     }
   }, [solved, statsRecorded]);
 
@@ -69,6 +90,7 @@ function App() {
       setMessage('Game Over! Better luck next time.');
       recordLoss(mistakes);
       setStatsRecorded(true);
+      clearState(); // Clear saved state on loss
       // Reveal all unsolved categories
       const unsolvedCategories = PUZZLE_DATA.filter(
         cat => !solved.some(s => s.category === cat.category)
@@ -169,22 +191,26 @@ function App() {
 
   function handlePrevPuzzle() {
     if (currentPuzzleIndex > 0) {
+      clearState(); // Clear saved state when manually changing puzzles
       setCurrentPuzzleIndex(currentPuzzleIndex - 1);
     }
   }
 
   function handleNextPuzzle() {
     if (currentPuzzleIndex < puzzlesData.length - 1) {
+      clearState(); // Clear saved state when manually changing puzzles
       setCurrentPuzzleIndex(currentPuzzleIndex + 1);
     }
   }
 
   function handleRandomPuzzle() {
+    clearState(); // Clear saved state when manually changing puzzles
     const randomIndex = Math.floor(Math.random() * puzzlesData.length);
     setCurrentPuzzleIndex(randomIndex);
   }
 
   function handleResetPuzzle() {
+    clearState(); // Clear saved state when resetting
     // Reset current puzzle
     const allWords = PUZZLE_DATA.flatMap(cat => 
       cat.words.map(word => ({
@@ -209,6 +235,7 @@ function App() {
       recordReveal(mistakes);
       setStatsRecorded(true);
     }
+    clearState(); // Clear saved state when revealing solution
     setRevealed(true);
     setGameOver(true);
     setMessage('Solution revealed');
@@ -223,6 +250,7 @@ function App() {
     e.preventDefault();
     const puzzleNum = parseInt(puzzleNumberInput);
     if (!isNaN(puzzleNum) && puzzleNum >= 1 && puzzleNum <= puzzlesData.length) {
+      clearState(); // Clear saved state when jumping to a new puzzle
       setCurrentPuzzleIndex(puzzleNum - 1);
       setPuzzleNumberInput('');
     }
