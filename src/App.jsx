@@ -5,6 +5,7 @@ import packageJson from '../package.json';
 import { useVersionCheck } from './useVersionCheck';
 import { useStats } from './useStats';
 import { useGameState } from './useGameState';
+import { usePuzzleHistory } from './usePuzzleHistory';
 import StatsModal from './StatsModal';
 
 const MAX_MISTAKES = 4;
@@ -13,6 +14,7 @@ function App() {
   const { newVersionAvailable, reload } = useVersionCheck();
   const { stats, recordWin, recordLoss, recordReveal, resetStats, getWinRate, getAverageMistakes } = useStats();
   const { savedState, saveState, clearState } = useGameState();
+  const { recordAttempt, recordCompletion, getPuzzleStats, hasPlayedBefore, hasWonBefore } = usePuzzleHistory();
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(savedState.currentPuzzleIndex);
   const [puzzleNumberInput, setPuzzleNumberInput] = useState('');
   const [words, setWords] = useState([]);
@@ -24,6 +26,7 @@ function App() {
   const [revealed, setRevealed] = useState(savedState.revealed);
   const [showStats, setShowStats] = useState(false);
   const [statsRecorded, setStatsRecorded] = useState(false);
+  const [puzzleAttemptRecorded, setPuzzleAttemptRecorded] = useState(false);
   
   const currentPuzzle = puzzlesData[currentPuzzleIndex];
   const PUZZLE_DATA = currentPuzzle.categories.map(cat => ({
@@ -53,6 +56,7 @@ function App() {
       // Restore saved state
       setWords(shuffleArray(allWords));
       // solved and mistakes are already set from savedState in initial state
+      setPuzzleAttemptRecorded(false); // Allow recording attempt for resumed game
     } else {
       // Start fresh
       setWords(shuffleArray(allWords));
@@ -63,8 +67,17 @@ function App() {
       setMessage('');
       setRevealed(false);
       setStatsRecorded(false);
+      setPuzzleAttemptRecorded(false);
     }
   }, [currentPuzzleIndex]);
+
+  // Record puzzle attempt when user starts playing
+  useEffect(() => {
+    if (!puzzleAttemptRecorded && solved.length === 0 && mistakes === 0) {
+      recordAttempt(currentPuzzle.id);
+      setPuzzleAttemptRecorded(true);
+    }
+  }, [currentPuzzle.id, puzzleAttemptRecorded, solved.length, mistakes]);
 
   // Save game state whenever it changes
   useEffect(() => {
@@ -78,6 +91,7 @@ function App() {
       setGameOver(true);
       setMessage('🎉 Congratulations! You won!');
       recordWin(mistakes);
+      recordCompletion(currentPuzzle.id, mistakes, true); // Record puzzle completion
       setStatsRecorded(true);
       clearState(); // Clear saved state on win
     }
@@ -89,6 +103,7 @@ function App() {
       setGameOver(true);
       setMessage('Game Over! Better luck next time.');
       recordLoss(mistakes);
+      recordCompletion(currentPuzzle.id, mistakes, false); // Record puzzle completion (loss)
       setStatsRecorded(true);
       clearState(); // Clear saved state on loss
       // Reveal all unsolved categories
@@ -233,6 +248,7 @@ function App() {
   function handleRevealSolution() {
     if (!statsRecorded) {
       recordReveal(mistakes);
+      recordCompletion(currentPuzzle.id, mistakes, false); // Record puzzle completion (revealed)
       setStatsRecorded(true);
     }
     clearState(); // Clear saved state when revealing solution
@@ -280,6 +296,12 @@ function App() {
           Create four groups of four! 
           <span className="puzzle-info-inline">
             Puzzle #{currentPuzzle.id} - {currentPuzzle.date}
+            {hasPlayedBefore(currentPuzzle.id) && (
+              <span className="puzzle-history-badge">
+                {hasWonBefore(currentPuzzle.id) ? ' ✓' : ' ↻'} 
+                {getPuzzleStats(currentPuzzle.id).wins}x
+              </span>
+            )}
           </span>
         </p>
         <div className="puzzle-navigation">
