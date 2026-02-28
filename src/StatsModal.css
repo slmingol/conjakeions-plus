@@ -154,6 +154,26 @@
   color: white;
 }
 
+.puzzle-stats-section {
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.puzzle-stats-section h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #000;
+  text-align: center;
+}
+
+.puzzle-stats-section .stats-grid {
+  padding: 0;
+  border-bottom: none;
+  grid-template-columns: repeat(2, 1fr);
+}
+
 @media (max-width: 600px) {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);

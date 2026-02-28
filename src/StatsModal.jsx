@@ -1,7 +1,7 @@
 import React from 'react';
 import './StatsModal.css';
 
-function StatsModal({ stats, getWinRate, getAverageMistakes, onClose, onReset }) {
+function StatsModal({ stats, getWinRate, getAverageMistakes, totalPuzzlesAttempted, totalPuzzlesWon, onClose, onReset }) {
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -26,6 +26,20 @@ function StatsModal({ stats, getWinRate, getAverageMistakes, onClose, onReset })
           <div className="stat-item">
             <div className="stat-value">{stats.maxStreak}</div>
             <div className="stat-label">Max Streak</div>
+          </div>
+        </div>
+
+        <div className="puzzle-stats-section">
+          <h3>Unique Puzzles</h3>
+          <div className="stats-grid">
+            <div className="stat-item">
+              <div className="stat-value">{totalPuzzlesAttempted}</div>
+              <div className="stat-label">Attempted</div>
+            </div>
+            <div className="stat-item">
+              <div className="stat-value">{totalPuzzlesWon}</div>
+              <div className="stat-label">Won</div>
+            </div>
           </div>
         </div>
 
