@@ -14,6 +14,7 @@ function App() {
   const [mistakes, setMistakes] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [message, setMessage] = useState('');
+  const [revealed, setRevealed] = useState(false);
   
   const currentPuzzle = puzzlesData[currentPuzzleIndex];
   const PUZZLE_DATA = currentPuzzle.categories.map(cat => ({
@@ -39,6 +40,7 @@ function App() {
     setMistakes(0);
     setGameOver(false);
     setMessage('');
+    setRevealed(false);
   }, [currentPuzzleIndex]);
 
   // Check if game is won
@@ -52,7 +54,7 @@ function App() {
 
   // Check if game is lost
   useEffect(() => {
-    if (mistakes >= MAX_MISTAKES) {
+    if (mistakes >= MAX_MISTAKES && !revealed) {
       setGameOver(true);
       setMessage('Game Over! Better luck next time.');
       // Reveal all unsolved categories
@@ -176,6 +178,18 @@ function App() {
     setMistakes(0);
     setGameOver(false);
     setMessage('');
+    setRevealed(false);
+  }
+
+  function handleRevealSolution() {
+    setRevealed(true);
+    setGameOver(true);
+    setMessage('Solution revealed');
+    // Reveal all unsolved categories
+    const unsolvedCategories = PUZZLE_DATA.filter(
+      cat => !solved.some(s => s.category === cat.category)
+    );
+    setSolved([...solved, ...unsolvedCategories.map(cat => ({ ...cat, revealed: true }))]);
   }
 
   function handleJumpToPuzzle(e) {
@@ -303,6 +317,12 @@ function App() {
             <div className="mistakes">
               {mistakes} Incorrect
             </div>
+            <button 
+              onClick={handleRevealSolution}
+              className="control-button reveal-solution"
+            >
+              Reveal Solution
+            </button>
           </div>
         )}
 

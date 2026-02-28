@@ -232,14 +232,30 @@
 }
 
 .mistakes-container {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 1rem;
+  padding: 0 1rem;
 }
 
 .mistakes {
   font-size: 0.9rem;
   color: #666;
   font-weight: 600;
+}
+
+.control-button.reveal-solution {
+  background-color: #5a594e;
+  color: white;
+  border-color: #5a594e;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.control-button.reveal-solution:hover {
+  background-color: #000;
+  border-color: #000;
 }
 
 .puzzle-navigation {
