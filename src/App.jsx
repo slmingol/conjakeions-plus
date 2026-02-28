@@ -140,15 +140,25 @@ function App() {
         setWords(remainingWords);
         setMessage('');
       }, 1000);
-    } else if (categories.length === 2) {
-      // Close! 3 out of 4 correct
-      setMistakes(mistakes + 1);
-      setMessage('One away...');
-      setSelected([]);
     } else {
-      // Wrong guess
+      // Check how many words match each category for better feedback
+      const categoryCounts = {};
+      selectedWords.forEach(w => {
+        categoryCounts[w.category] = (categoryCounts[w.category] || 0) + 1;
+      });
+      
+      const maxMatch = Math.max(...Object.values(categoryCounts));
+      
       setMistakes(mistakes + 1);
-      setMessage('Not quite. Try again!');
+      
+      if (maxMatch === 3) {
+        setMessage('One away...');
+      } else if (maxMatch === 2) {
+        setMessage('Try again!');
+      } else {
+        setMessage('Not quite. Keep trying!');
+      }
+      
       setSelected([]);
     }
   }
