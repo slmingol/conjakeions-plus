@@ -240,8 +240,8 @@
 }
 
 .bottom-info-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin: 1rem 0;
   gap: 1rem;
@@ -253,6 +253,8 @@
   font-weight: 600;
   margin: 0;
   padding: 0;
+  text-align: center;
+  grid-column: 2;
 }
 
 .stats-button-inline {
@@ -266,6 +268,8 @@
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
+  grid-column: 3;
+  justify-self: end;
 }
 
 .stats-button-inline:hover {
