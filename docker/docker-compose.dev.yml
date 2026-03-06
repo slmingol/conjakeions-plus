@@ -1,0 +1,23 @@
+services:
+  conjakeions-plus-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.dev
+    container_name: conjakeions-plus-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ..:/app
+      - /app/node_modules
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - conjakeions-network
+    stdin_open: true
+    tty: true
+
+networks:
+  conjakeions-network:
+    driver: bridge

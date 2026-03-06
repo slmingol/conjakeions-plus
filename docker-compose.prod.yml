@@ -1,13 +1,1 @@
-services:
-  conjakeions-plus:
-    image: ghcr.io/slmingol/conjakeions-plus:latest
-    container_name: conjakeions-plus
-    ports:
-      - "3000:80"
-    restart: unless-stopped
-    networks:
-      - conjakeions-network
-
-networks:
-  conjakeions-network:
-    driver: bridge
+docker/docker-compose.prod.yml

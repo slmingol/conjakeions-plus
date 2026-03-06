@@ -1,17 +1,1 @@
-services:
-  conjakeions-plus:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: conjakeions-plus
-    ports:
-      - "3000:80"
-    restart: unless-stopped
-    environment:
-      - NODE_ENV=production
-    networks:
-      - conjakeions-network
-
-networks:
-  conjakeions-network:
-    driver: bridge
+docker/docker-compose.yml
