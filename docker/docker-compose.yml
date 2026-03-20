@@ -9,9 +9,16 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - TZ=America/New_York
+    volumes:
+      - puzzle-data:/app/data
     networks:
       - conjakeions-network
 
+
+volumes:
+  puzzle-data:
+    driver: local
 networks:
   conjakeions-network:
     driver: bridge
