@@ -2,18 +2,38 @@
 
 This directory contains scripts for collecting daily Connections puzzles from connectionsgame.org.
 
+# Puzzle Scraping Scripts
+
+This directory contains scripts for automatically collecting daily Connections puzzles from connectionsgame.org.
+
 ## Scripts
 
 ### `daily-scraper.js`
-Fetches today's puzzle from connectionsgame.org.
+**Automatically** fetches today's puzzle with complete solution by simulating gameplay.
 
-**Note:** Because connectionsgame.org doesn't expose solutions without gameplay, this script currently only fetches metadata (puzzle ID and date). You'll need to either:
-- Play through the puzzle and manually record the solution
-- Use browser dev tools to extract the solution data
-- Wait for puzzle solution APIs/endpoints
+The scraper:
+1. Navigates to connectionsgame.org
+2. Extracts puzzle ID and date
+3. Makes 4 random guesses to exhaust all attempts
+4. Captures the revealed solution (all 4 categories with words)
+5. Saves to `data/collected-puzzles.json`
 
 ```bash
 npm run scrape
+```
+
+**Output example:**
+```
+✓ Daily scrape successful!
+Puzzle #916 - Thursday, March 20, 2026
+Categories:
+  1. [Difficulty 1] Things that are round
+     BALL, COIN, GLOBE, WHEEL
+  2. [Difficulty 2] Types of cheese
+     BRIE, CHEDDAR, GOUDA, SWISS
+  ...
+✓ Added to collected-puzzles.json
+Run "npm run merge" to add to main puzzle collection
 ```
 
 ### `scheduler.js`
@@ -44,60 +64,47 @@ npm run dedupe
 
 ## Workflow
 
-### Manual Solution Entry
+### Fully Automated Collection
 
-Since auto-scraping solutions is difficult, here's the recommended workflow:
+The entire process is now automated:
 
-1. **Run the scraper** to get today's puzzle metadata:
+1. **Scrape today's puzzle** (with complete solution):
    ```bash
    npm run scrape
    ```
 
-2. **Play the puzzle** on connectionsgame.org (or extract via browser dev tools)
-
-3. **Manually add the solution** to `data/collected-puzzles.json`:
-   ```json
-   {
-     "id": 916,
-     "date": "March 20, 2026",
-     "categories": [
-       {
-         "name": "Things that are round",
-         "words": ["BALL", "COIN", "GLOBE", "WHEEL"],
-         "difficulty": 1,
-         "color": "#F9DF6D"
-       },
-       {
-         "name": "Types of cheese",
-         "words": ["BRIE", "CHEDDAR", "GOUDA", "SWISS"],
-         "difficulty": 2,
-         "color": "#A0C35A"
-       },
-       {
-         "name": "Words ending in -TION",
-         "words": ["ACTION", "MOTION", "NATION", "POTION"],
-         "difficulty": 3,
-         "color": "#B0C4EF"
-       },
-       {
-         "name": "___BOX",
-         "words": ["CHAT", "LUNCH", "MAIL", "TOY"],
-         "difficulty": 4,
-         "color": "#BA81C5"
-       }
-     ]
-   }
-   ```
-
-4. **Merge with main puzzle collection**:
+2. **Merge with main collection**:
    ```bash
    npm run merge
    ```
 
-5. **Rebuild the app** to include new puzzles:
+3. **Rebuild the app** to include new puzzles:
    ```bash
    npm run build
    ```
+
+4. **(Optional) Remove duplicates**:
+   ```bash
+   npm run dedupe
+   ```
+
+### Continuous Collection with Scheduler
+
+Run the scheduler to automatically collect puzzles 4 times daily:
+
+```bash
+npm run scheduler
+```
+
+The scheduler runs at **2am, 8am, 2pm, 8pm** and will:
+- Check if today's puzzle has been collected
+- Scrape and save any new puzzles
+- Track state in `data/scheduler-state.json`
+
+Keep it running as a background service:
+```bash
+nohup npm run scheduler > logs/scheduler.log 2>&1 &
+```
 
 ## Automation with GitHub Actions
 
