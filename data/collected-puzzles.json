@@ -1,5 +1,53 @@
 {
-  "collected": "2026-03-20T00:00:00.000Z",
-  "count": 0,
-  "puzzles": []
+  "collected": "2026-03-20T05:11:56.781Z",
+  "count": 1,
+  "puzzles": [
+    {
+      "id": 1013,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "Bruno Mars songs",
+          "words": [
+            "Finesse",
+            "Treasure",
+            "Marry You",
+            "The Lazy Song"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "Types of number",
+          "words": [
+            "Perfect",
+            "Square",
+            "Irrational",
+            "Prime"
+          ],
+          "difficulty": 5
+        },
+        {
+          "name": "Countries with the last letter changed to E",
+          "words": [
+            "Cube",
+            "Grenade",
+            "Male",
+            "Pere"
+          ],
+          "difficulty": 9
+        },
+        {
+          "name": "\"The ___\" quiz shows",
+          "words": [
+            "Chase",
+            "Wheel",
+            "Code",
+            "Wall"
+          ],
+          "difficulty": 13
+        }
+      ]
+    }
+  ]
 }

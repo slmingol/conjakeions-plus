@@ -19,6 +19,7 @@
     "preview": "vite preview",
     "prebuild": "node update-version.js",
     "scrape": "node scripts/daily-scraper.js",
+    "backfill": "node scripts/backfill-puzzles.js",
     "scheduler": "node scripts/scheduler.js",
     "merge": "node scripts/merge-puzzles.js",
     "dedupe": "node scripts/deduplicate-puzzles.js"
