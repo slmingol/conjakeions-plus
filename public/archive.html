@@ -6,6 +6,34 @@
     <title>Puzzle Archive - Conjakeions+</title>
     <link rel="icon" type="image/png" href="/logo.png">
     <style>
+        :root {
+            --bg-primary: #f7f7f7;
+            --bg-secondary: #fff;
+            --bg-tertiary: #efefe6;
+            --text-primary: #000;
+            --text-secondary: #5a594e;
+            --text-tertiary: #888;
+            --border-primary: #ddd;
+            --border-secondary: #cbd5e0;
+            --button-bg: #fff;
+            --button-hover: #f0f0f0;
+            --accent: #5a67d8;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #3a3a3a;
+            --text-primary: #e8e8e8;
+            --text-secondary: #b8b8b8;
+            --text-tertiary: #888;
+            --border-primary: #444;
+            --border-secondary: #555;
+            --button-bg: #3a3a3a;
+            --button-hover: #4a4a4a;
+            --accent: #7c8adb;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -17,9 +45,10 @@
                 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            background: #f5f5f5;
-            color: #333;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -36,7 +65,7 @@
         .header h1 {
             font-size: 2.5rem;
             margin-bottom: 10px;
-            color: #2c3e50;
+            color: var(--text-primary);
         }
 
         .header-actions {
@@ -48,7 +77,7 @@
 
         .btn {
             padding: 10px 20px;
-            background: #5a67d8;
+            background: var(--accent);
             color: white;
             border: none;
             border-radius: 6px;
@@ -60,15 +89,15 @@
         }
 
         .btn:hover {
-            background: #4c51bf;
+            background: var(--text-secondary);
         }
 
         .btn-secondary {
-            background: #718096;
+            background: var(--text-secondary);
         }
 
         .btn-secondary:hover {
-            background: #4a5568;
+            background: #4a4940;
         }
 
         .stats {
@@ -86,18 +115,18 @@
         .stat-value {
             font-size: 2rem;
             font-weight: bold;
-            color: #5a67d8;
+            color: var(--accent);
         }
 
         .stat-label {
             font-size: 0.9rem;
-            color: #666;
+            color: var(--text-secondary);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .filters {
-            background: white;
+            background: var(--bg-secondary);
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -106,6 +135,7 @@
             gap: 20px;
             flex-wrap: wrap;
             align-items: center;
+            border: 1px solid var(--border-primary);
         }
 
         .filter-group {
@@ -116,15 +146,17 @@
 
         .filter-group label {
             font-weight: 600;
-            color: #4a5568;
+            color: var(--text-secondary);
         }
 
         .filter-group select,
         .filter-group input {
             padding: 8px 12px;
-            border: 1px solid #cbd5e0;
+            border: 1px solid var(--border-secondary);
             border-radius: 4px;
             font-size: 14px;
+            background: var(--button-bg);
+            color: var(--text-primary);
         }
 
         .search-input {
@@ -133,10 +165,11 @@
         }
 
         .puzzle-list {
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             overflow: hidden;
+            border: 1px solid var(--border-primary);
         }
 
         .puzzle-row {
@@ -144,14 +177,14 @@
             grid-template-columns: 110px 1fr 80px;
             gap: 15px;
             padding: 12px 20px;
-            border-bottom: 1px solid #e2e8f0;
+            border-bottom: 1px solid var(--border-primary);
             cursor: pointer;
             transition: background 0.2s;
             align-items: center;
         }
 
         .puzzle-row:hover {
-            background: #f7fafc;
+            background: var(--button-hover);
         }
 
         .puzzle-row:last-child {
@@ -160,7 +193,7 @@
 
         .puzzle-date {
             font-weight: 600;
-            color: #5a67d8;
+            color: var(--accent);
             font-size: 0.9rem;
             white-space: nowrap;
         }
@@ -184,7 +217,7 @@
 
         .puzzle-id {
             font-size: 0.85rem;
-            color: #718096;
+            color: var(--text-secondary);
             font-weight: 500;
             text-align: right;
             white-space: nowrap;
@@ -194,13 +227,13 @@
             text-align: center;
             padding: 40px;
             font-size: 1.2rem;
-            color: #718096;
+            color: var(--text-secondary);
         }
 
         .no-results {
             text-align: center;
             padding: 40px;
-            color: #718096;
+            color: var(--text-secondary);
         }
 
         .pagination {
@@ -208,16 +241,17 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px;
-            background: white;
+            background: var(--bg-secondary);
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-top: 20px;
             flex-wrap: wrap;
             gap: 15px;
+            border: 1px solid var(--border-primary);
         }
 
         .pagination-info {
-            color: #4a5568;
+            color: var(--text-secondary);
             font-size: 0.9rem;
         }
 
@@ -229,18 +263,18 @@
 
         .pagination-btn {
             padding: 8px 16px;
-            background: white;
-            border: 1px solid #cbd5e0;
+            background: var(--button-bg);
+            border: 1px solid var(--border-secondary);
             border-radius: 4px;
             cursor: pointer;
             font-size: 14px;
             transition: all 0.2s;
-            color: #4a5568;
+            color: var(--text-primary);
         }
 
         .pagination-btn:hover:not(:disabled) {
-            background: #f7fafc;
-            border-color: #5a67d8;
+            background: var(--button-hover);
+            border-color: var(--accent);
         }
 
         .pagination-btn:disabled {
@@ -249,9 +283,9 @@
         }
 
         .pagination-btn.active {
-            background: #5a67d8;
+            background: var(--accent);
             color: white;
-            border-color: #5a67d8;
+            border-color: var(--accent);
         }
 
         .page-size-selector {
@@ -261,16 +295,18 @@
         }
 
         .page-size-selector label {
-            color: #4a5568;
+            color: var(--text-secondary);
             font-size: 0.9rem;
             font-weight: 600;
         }
 
         .page-size-selector select {
             padding: 6px 10px;
-            border: 1px solid #cbd5e0;
+            border: 1px solid var(--border-secondary);
             border-radius: 4px;
             font-size: 14px;
+            background: var(--button-bg);
+            color: var(--text-primary);
         }
 
         @media (max-width: 768px) {
@@ -419,6 +455,42 @@
     </div>
 
     <script type="module">
+        // Theme detection and application (same system as main app)
+        function getSystemTheme() {
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+
+        function getCurrentTheme() {
+            const savedTheme = localStorage.getItem('conjakeions-plus-theme') || 'system';
+            if (savedTheme === 'system') {
+                return getSystemTheme();
+            }
+            return savedTheme;
+        }
+
+        function applyTheme() {
+            const theme = getCurrentTheme();
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        // Apply theme immediately
+        applyTheme();
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            const savedTheme = localStorage.getItem('conjakeions-plus-theme') || 'system';
+            if (savedTheme === 'system') {
+                applyTheme();
+            }
+        });
+
+        // Listen for theme changes from other tabs/windows
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'conjakeions-plus-theme') {
+                applyTheme();
+            }
+        });
+
         let allPuzzles = [];
         let filteredPuzzles = [];
         let puzzleHistory = {};
@@ -630,7 +702,7 @@
 
             pageNumbersContainer.innerHTML = pages.map(page => {
                 if (page === '...') {
-                    return `<span style="padding: 0 8px; color: #718096;">...</span>`;
+                    return `<span style="padding: 0 8px; color: var(--text-tertiary);">...</span>`;
                 }
                 return `<button class="pagination-btn ${page === currentPage ? 'active' : ''}" 
                         onclick="goToPage(${page})">${page}</button>`;
