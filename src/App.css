@@ -192,6 +192,7 @@
   margin-bottom: 8px;
   text-align: center;
   animation: slideIn 0.3s ease-out;
+  color: #000;
 }
 
 .solved-category.revealed {
