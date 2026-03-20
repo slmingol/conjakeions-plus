@@ -454,14 +454,7 @@ function App() {
             </button>
             <div className="mistakes-display">
               <span className="mistakes-label">Mistakes Remaining:</span>
-              <div className="mistakes-dots">
-                {[...Array(MAX_MISTAKES)].map((_, index) => (
-                  <div 
-                    key={index}
-                    className={`mistake-dot ${index < mistakes ? 'used' : ''}`}
-                  />
-                ))}
-              </div>
+              <span className="mistakes-number">❌ {MAX_MISTAKES - mistakes}</span>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <a href="/archive.html" className="stats-button-inline archive-button-inline" title="View all puzzles">

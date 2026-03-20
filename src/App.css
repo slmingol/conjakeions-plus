@@ -366,22 +366,10 @@
   font-weight: 600;
 }
 
-.mistakes-dots {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.mistake-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: #5a594e;
-  transition: background-color 0.3s ease;
-}
-
-.mistake-dot.used {
-  background-color: #d4d4d4;
+.mistakes-number {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .stats-button-inline {
@@ -621,9 +609,8 @@
   .mistakes-label {
     font-size: 0.8rem;
   }
-  .mistake-dot {
-    width: 10px;
-    height: 10px;
+  .mistakes-number {
+    font-size: 1rem;
   }
   .stats-button-inline {
     padding: 0.3rem 0.5rem;
