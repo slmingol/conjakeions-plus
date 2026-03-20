@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Archive - Conjakeions+</title>
+    <link rel="icon" type="image/png" href="/logo.png">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px 0 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .header-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #5a67d8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background: #4c51bf;
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .btn-secondary:hover {
+            background: #4a5568;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #5a67d8;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .puzzle-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .puzzle-row {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 20px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            align-items: center;
+        }
+
+        .puzzle-row:hover {
+            background: #f7fafc;
+        }
+
+        .puzzle-row:last-child {
+            border-bottom: none;
+        }
+
+        .puzzle-date {
+            font-weight: 600;
+            color: #5a67d8;
+            font-size: 0.9rem;
+        }
+
+        .puzzle-categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .category-tag {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #2d3748;
+            background: #edf2f7;
+        }
+
+        .puzzle-id {
+            font-size: 0.9rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2rem;
+            color: #718096;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #718096;
+        }
+
+        @media (max-width: 768px) {
+            .puzzle-row {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .puzzle-categories {
+                order: 2;
+            }
+
+            .puzzle-id {
+                text-align: right;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧩 Puzzle Archive</h1>
+            <p>Browse all <span id="total-count">0</span> puzzles</p>
+            <div class="header-actions">
+                <a href="/" class="btn">← Back to Game</a>
+                <button id="random-btn" class="btn btn-secondary">🎲 Random Puzzle</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="total-puzzles">0</div>
+                <div class="stat-label">Total Puzzles</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="attempted-count">0</div>
+                <div class="stat-label">Attempted</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="completed-count">0</div>
+                <div class="stat-label">Completed</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label for="sort-order">Sort:</label>
+                <select id="sort-order">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="id-asc">ID (Low to High)</option>
+                    <option value="id-desc">ID (High to Low)</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status-filter">Status:</label>
+                <select id="status-filter">
+                    <option value="all">All Puzzles</option>
+                    <option value="attempted">Attempted</option>
+                    <option value="completed">Completed</option>
+                    <option value="not-attempted">Not Attempted</option>
+                </select>
+            </div>
+            <input 
+                type="text" 
+                id="search-input" 
+                class="search-input" 
+                placeholder="Search categories..."
+            >
+        </div>
+
+        <div id="loading" class="loading">Loading puzzles...</div>
+        <div id="no-results" class="no-results" style="display: none;">
+            No puzzles found matching your filters.
+        </div>
+        <div id="puzzle-list" class="puzzle-list" style="display: none;"></div>
+    </div>
+
+    <script type="module">
+        let allPuzzles = [];
+        let filteredPuzzles = [];
+        let puzzleHistory = {};
+
+        const PUZZLE_HISTORY_KEY = 'conjakeions-plus-puzzle-history';
+
+        // Load puzzle history
+        function loadHistory() {
+            try {
+                const stored = localStorage.getItem(PUZZLE_HISTORY_KEY);
+                if (stored) {
+                    puzzleHistory = JSON.parse(stored);
+                }
+            } catch (error) {
+                console.error('Error loading puzzle history:', error);
+            }
+        }
+
+        // Load puzzles
+        async function loadPuzzles() {
+            try {
+                // Try to fetch from src first (dev), then fallback to assets (production)
+                let puzzles;
+                try {
+                    const response = await fetch('/src/puzzles.json');
+                    puzzles = await response.json();
+                } catch {
+                    // Fallback for production build - may need to adjust path
+                    const response = await fetch('/puzzles.json');
+                    puzzles = await response.json();
+                }
+                
+                allPuzzles = puzzles;
+                
+                loadHistory();
+                updateStats();
+                applyFilters();
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Error loading puzzles:', error);
+                document.getElementById('loading').textContent = 'Error loading puzzles. Please refresh.';
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            const totalPuzzles = allPuzzles.length;
+            const attemptedCount = Object.keys(puzzleHistory).filter(id => 
+                puzzleHistory[id].attempts > 0
+            ).length;
+            const completedCount = Object.keys(puzzleHistory).filter(id => 
+                puzzleHistory[id].completions > 0
+            ).length;
+
+            document.getElementById('total-count').textContent = totalPuzzles;
+            document.getElementById('total-puzzles').textContent = totalPuzzles;
+            document.getElementById('attempted-count').textContent = attemptedCount;
+            document.getElementById('completed-count').textContent = completedCount;
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const sortOrder = document.getElementById('sort-order').value;
+            const statusFilter = document.getElementById('status-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+            // Start with all puzzles
+            filteredPuzzles = [...allPuzzles];
+
+            // Apply status filter
+            if (statusFilter !== 'all') {
+                filteredPuzzles = filteredPuzzles.filter(puzzle => {
+                    const history = puzzleHistory[puzzle.id];
+                    if (statusFilter === 'attempted') {
+                        return history && history.attempts > 0;
+                    } else if (statusFilter === 'completed') {
+                        return history && history.completions > 0;
+                    } else if (statusFilter === 'not-attempted') {
+                        return !history || history.attempts === 0;
+                    }
+                    return true;
+                });
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                filteredPuzzles = filteredPuzzles.filter(puzzle => {
+                    const categoryNames = puzzle.categories.map(c => c.name.toLowerCase()).join(' ');
+                    return categoryNames.includes(searchTerm) || 
+                           puzzle.date.includes(searchTerm) ||
+                           puzzle.id.toString().includes(searchTerm);
+                });
+            }
+
+            // Apply sort
+            filteredPuzzles.sort((a, b) => {
+                switch (sortOrder) {
+                    case 'newest':
+                        return new Date(b.date) - new Date(a.date);
+                    case 'oldest':
+                        return new Date(a.date) - new Date(b.date);
+                    case 'id-asc':
+                        return a.id - b.id;
+                    case 'id-desc':
+                        return b.id - a.id;
+                    default:
+                        return 0;
+                }
+            });
+
+            renderPuzzles();
+        }
+
+        // Render puzzles
+        function renderPuzzles() {
+            const listElement = document.getElementById('puzzle-list');
+            const noResultsElement = document.getElementById('no-results');
+
+            if (filteredPuzzles.length === 0) {
+                listElement.style.display = 'none';
+                noResultsElement.style.display = 'block';
+                return;
+            }
+
+            noResultsElement.style.display = 'none';
+            listElement.style.display = 'block';
+
+            const html = filteredPuzzles.map(puzzle => {
+                const history = puzzleHistory[puzzle.id];
+                const attempted = history && history.attempts > 0;
+                const completed = history && history.completions > 0;
+                const won = history && history.wins > 0;
+
+                const statusIcon = completed ? (won ? '✓' : '✗') : (attempted ? '↻' : '');
+                
+                return `
+                    <div class="puzzle-row" onclick="openPuzzle(${puzzle.id})">
+                        <div class="puzzle-date">
+                            ${formatDate(puzzle.date)}
+                            ${statusIcon ? `<span style="margin-left: 5px;">${statusIcon}</span>` : ''}
+                        </div>
+                        <div class="puzzle-categories">
+                            ${puzzle.categories.map(cat => 
+                                `<span class="category-tag">${cat.name}</span>`
+                            ).join('')}
+                        </div>
+                        <div class="puzzle-id">Puzzle #${puzzle.id}</div>
+                    </div>
+                `;
+            }).join('');
+
+            listElement.innerHTML = html;
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            } catch {
+                return dateStr;
+            }
+        }
+
+        // Open puzzle
+        window.openPuzzle = function(puzzleId) {
+            const puzzleIndex = allPuzzles.findIndex(p => p.id === puzzleId);
+            if (puzzleIndex !== -1) {
+                window.location.href = `/?puzzle=${puzzleIndex}`;
+            }
+        };
+
+        // Random puzzle
+        document.getElementById('random-btn').addEventListener('click', () => {
+            const randomPuzzle = allPuzzles[Math.floor(Math.random() * allPuzzles.length)];
+            openPuzzle(randomPuzzle.id);
+        });
+
+        // Event listeners
+        document.getElementById('sort-order').addEventListener('change', applyFilters);
+        document.getElementById('status-filter').addEventListener('change', applyFilters);
+        document.getElementById('search-input').addEventListener('input', applyFilters);
+
+        // Initialize
+        loadPuzzles();
+    </script>
+</body>
+</html>

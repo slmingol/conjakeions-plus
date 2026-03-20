@@ -340,6 +340,9 @@ function App() {
         <div className="header-title">
           <img src="/logo.png" alt="Conjakeions+ Logo" className="logo" />
           <h1>Conjakeions+</h1>
+          <a href="/archive.html" className="archive-link" title="View all puzzles">
+            📚 Archive
+          </a>
         </div>
         <p className="current-date">
           {new Date().toLocaleDateString('en-US', { 
