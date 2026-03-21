@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
- * Daily Connections puzzle scraper for connectionsgame.org
- * Fetches today's puzzle with solution
+ * Daily Connections puzzle scraper for connectionsplus.io
+ * Fetches today's puzzle with solution by playing through it
  */
 
-import puppeteer from 'puppeteer';
+import { chromium } from 'playwright';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -14,27 +14,31 @@ const __dirname = path.dirname(__filename);
 
 // Color mapping for difficulty levels
 const DIFFICULTY_COLORS = {
-    1: '#F9DF6D', // Yellow
-    2: '#A0C35A', // Green
-    3: '#B0C4EF', // Blue
-    4: '#BA81C5'  // Purple
+    1: '#F9DF6D', // Yellow - Straightforward
+    5: '#A0C35A', // Green
+    9: '#B0C4EF', // Blue
+    13: '#BA81C5'  // Purple - Tricky
 };
 
 /**
- * Get today's puzzle from connectionsgame.org by playing to reveal solution
+ * Get a puzzle from connectionsplus.io by playing to reveal solution
+ * @param {number} daysAgo - How many days ago (0 = today, 1 = yesterday, etc.)
  */
-async function getTodaysPuzzle() {
+async function getTodaysPuzzle(daysAgo = 0) {
     let browser;
+    let context;
     try {
-        console.log(`[${new Date().toISOString()}] Starting daily puzzle scrape...`);
+        console.log(`[${new Date().toISOString()}] Starting puzzle scrape (${daysAgo} days ago)...`);
         
-        browser = await puppeteer.launch({ 
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        browser = await chromium.launch({ 
+            headless: true
         });
         
-        const page = await browser.newPage();
-        await page.setViewport({ width: 1280, height: 800 });
+        context = await browser.newContext({
+            viewport: { width: 1280, height: 800 }
+        });
+        
+        const page = await context.newPage();
         
         // Listen to console logs from the page
         page.on('console', msg => {
@@ -44,304 +48,314 @@ async function getTodaysPuzzle() {
             }
         });
         
-        const url = 'https://connectionsgame.org/';
-        console.log(`Fetching ${url}...`);
+        let url;
+        if (daysAgo === 0) {
+            // Go directly to main page (today's daily puzzle)
+            url = 'https://connectionsplus.io/';
+            console.log(`Fetching today's puzzle from ${url}...`);
+            await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+            await page.waitForTimeout(3000);
+        } else {
+            // Go to archive and click on specific past puzzle
+            url = 'https://connectionsplus.io/nyt-archive';
+            console.log(`Fetching archive from ${url}...`);
+            await page.goto(url, { waitUntil: 'load', timeout: 60000 });
+            await page.waitForTimeout(3000);
+            
+            // First, get today's puzzle number from the page
+            const bodyText = await page.textContent('body');
+            const todayMatch = bodyText.match(/Connections #(\d+)/);
+            if (!todayMatch) {
+                throw new Error('Could not find today\'s puzzle number in archive');
+            }
+            const todayPuzzleNum = parseInt(todayMatch[1]);
+            const targetPuzzleNum = todayPuzzleNum - daysAgo;
+            
+            console.log(`Today's puzzle: #${todayPuzzleNum}, targeting #${targetPuzzleNum}`);
+            
+            // Click on the target puzzle in the archive (with pagination support)
+            let puzzleCell = page.locator('td').filter({ hasText: `Connections #${targetPuzzleNum}` });
+            let maxPages = 20; // Safety limit
+            let pageNum = 1;
+            
+            while (await puzzleCell.count() === 0 && pageNum < maxPages) {
+                // Look for "next-page" aria-label button
+                const nextButton = page.getByRole('button', { name: 'next-page' });
+                const hasNext = await nextButton.count() > 0 && await nextButton.isEnabled();
+                
+                if (!hasNext) {
+                    throw new Error(`Puzzle #${targetPuzzleNum} not found in archive (checked ${pageNum} page(s))`);
+                }
+                
+                console.log(`  Puzzle not on page ${pageNum}, clicking Next...`);
+                await nextButton.click();
+                await page.waitForTimeout(2000);
+                pageNum++;
+                
+                // Re-query for the puzzle on the new page
+                puzzleCell = page.locator('td').filter({ hasText: `Connections #${targetPuzzleNum}` });
+            }
+            
+            if (await puzzleCell.count() === 0) {
+                throw new Error(`Puzzle #${targetPuzzleNum} not found in archive after checking ${maxPages} pages`);
+            }
+            
+            await puzzleCell.click();
+            console.log(`Clicked on puzzle #${targetPuzzleNum}`);
+            await page.waitForTimeout(2000);
+        }
         
-        await page.goto(url, { waitUntil: 'networkidle0', timeout: 30000 });
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        console.log('Page loaded; waiting for word tiles...');
         
         // Extract puzzle metadata
-        const metadata = await page.evaluate(() => {
-            const data = {
-                id: null,
-                date: null
-            };
-            
-            const bodyText = document.body.textContent;
-            
-            // Extract puzzle number
-            const puzzleMatch = bodyText.match(/Puzzle\s+#?(\d+)/i) || 
-                               bodyText.match(/#(\d+)/);
-            if (puzzleMatch) {
-                data.id = parseInt(puzzleMatch[1]);
-            }
-            
-            // Extract date
-            const dateMatch = bodyText.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[^,]*,\s*\w+\s+\d+,\s*\d{4}/);
-            if (dateMatch) {
-                data.date = dateMatch[0];
-            } else {
-                data.date = new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                });
-            }
-            
-            return data;
-        });
+        const puzzleText = await page.textContent('body');
+        const metadata = {
+            id: null,
+            date: null
+        };
+        
+        // Extract puzzle number
+        const puzzleMatch = puzzleText.match(/Puzzle\s+#?(\d+)/i) || 
+                           puzzleText.match(/#(\d+)/);
+        if (puzzleMatch) {
+            metadata.id = parseInt(puzzleMatch[1]);
+        }
+        
+        // Extract date
+        const dateMatch = puzzleText.match(/(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[^,]*,\s*\w+\s+\d+,\s*\d{4}/);
+        if (dateMatch) {
+            metadata.date = dateMatch[0];
+        } else {
+            metadata.date = new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+        }
         
         console.log(`Found puzzle #${metadata.id} - ${metadata.date}`);
         
-        // Now play the game to reveal the solution
-        console.log('Playing game to exhaust attempts and reveal solution...');
+        // Dismiss slider widget at bottom if present
+        console.log('Dismissing slider widget...');
+        try {
+            const closeButtons = await page.locator('[class*="slider"] button, [class*="banner"] button, [class*="notification"] button, [class*="close"]').all();
+            for (const btn of closeButtons) {
+                if (await btn.isVisible()) {
+                    await btn.click();
+                    console.log('  Dismissed slider widget');
+                }
+            }
+        } catch (err) {
+            // Slider may not exist, that's OK
+        }
+        await page.waitForTimeout(1000);
         
-        // Make 4 random wrong guesses to trigger solution reveal
+        // Play the game: select 4 DIFFERENT words each time, submit, deselect - repeat 4 times
+        console.log('Making 4 wrong guesses to exhaust attempts...');
+        
+        // Get all word buttons
+        const allWordButtons = await page.locator('button.chakra-button').all();
+        const wordTiles = [];
+        
+        for (const btn of allWordButtons) {
+            const text = await btn.textContent();
+            const trimmed = text.trim();
+            // Filter out control buttons
+            if (trimmed.length >= 3 && 
+                trimmed.length <= 20 &&
+                !trimmed.match(/^(submit|shuffle|deselect|share|close|reveal)/i)) {
+                wordTiles.push(btn);
+            }
+        }
+        
+        console.log(`Found ${wordTiles.length} word tiles`);
+        
+        // Select different sets of 4 words for each attempt (0-3, 4-7, 8-11, 12-15)
         for (let attempt = 1; attempt <= 4; attempt++) {
             console.log(`Attempt ${attempt}/4...`);
             
             try {
-                // Find all clickable word elements (try multiple selector strategies)
-                let wordButtons = await page.$$('button:not(:disabled)');
+                const startIdx = (attempt - 1) * 4;
+                const endIdx = startIdx + 4;
+                const wordsForThisAttempt = wordTiles.slice(startIdx, endIdx);
                 
-                // Filter to get only word buttons (not submit/shuffle/clear)
-                wordButtons = wordButtons.filter(async (btn) => {
-                    const text = await btn.evaluate(el => el.textContent);
-                    return text && text.length > 2 && text.length < 20;
-                });
-                
-                if (wordButtons.length < 4) {
-                    console.log('Not enough word buttons found, trying alternative approach...');
-                    // Try clicking any divs or spans that look like words
-                    wordButtons = await page.$$('div.word, span.word, [class*="word-"]');
+                // Click the words
+                const clickedWords = [];
+                for (const wordBtn of wordsForThisAttempt) {
+                    const text = await wordBtn.textContent();
+                    await wordBtn.click();
+                    clickedWords.push(text.trim());
                 }
                 
-                if (wordButtons.length === 0) {
-                    console.log('No word buttons found');
-                    break;
+                console.log(`  Selected ${clickedWords.length} words:`, clickedWords.join(', '));
+                await page.waitForTimeout(500);
+                
+                // Click Submit
+                await page.getByRole('button', { name: 'Submit' }).click();
+                console.log('  Clicked Submit');
+                await page.waitForTimeout(2000);
+                
+                // Click Deselect All after submit
+                const deselectBtn = page.locator('button.chakra-button').filter({ hasText: /deselect/i });
+                if (await deselectBtn.count() > 0) {
+                    await deselectBtn.first().click();
+                    console.log('  Clicked Deselect All');
                 }
-                
-                // Shuffle and select first 4
-                const shuffled = wordButtons.sort(() => Math.random() - 0.5);
-                const toClick = shuffled.slice(0, Math.min(4, shuffled.length));
-                
-                // Click 4 random words
-                for (const button of toClick) {
-                    try {
-                        await button.click();
-                        await new Promise(resolve => setTimeout(resolve, 300));
-                    } catch (e) {
-                        // Button might have become disabled, skip it
-                    }
-                }
-                
-                // Find submit button using text content
-                const submitButton = await page.evaluateHandle(() => {
-                    const buttons = Array.from(document.querySelectorAll('button'));
-                    return buttons.find(btn => 
-                        btn.textContent.toLowerCase().includes('submit') ||
-                        btn.textContent.toLowerCase().includes('guess') ||
-                        btn.className.toLowerCase().includes('submit')
-                    );
-                });
-                
-                if (submitButton && submitButton.asElement()) {
-                    await submitButton.asElement().click();
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                } else {
-                    console.log('Could not find submit button, trying Enter key...');
-                    await page.keyboard.press('Enter');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                }
+                await page.waitForTimeout(1000);
                 
             } catch (err) {
-                console.log(`Error on attempt ${attempt}:`, err.message);
+                console.log(`  Error on attempt ${attempt}:`, err.message);
             }
         }
         
-        // Wait for solution to be revealed or reveal button to appear
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await page.waitForTimeout(3000);
         
-        // Check if there's a "Give Up" or "Show Answer" button and click it
-        console.log('Looking for reveal/give-up button...');
-        const buttonClicked = await page.evaluate(() => {
-            const buttons = Array.from(document.querySelectorAll('button, a, div[role="button"]'));
-            const revealBtn = buttons.find(btn => {
-                const text = btn.textContent.toLowerCase();
-                return text.includes('give up') || 
-                       text.includes('reveal') || 
-                       text.includes('show answer') ||
-                       text.includes('see solution') ||
-                       text.includes('view answer');
-            });
+        // CRITICAL: After 4 attempts, a modal appears that must be closed first!
+        console.log('Waiting for modal and looking for "Close" button...');
+        
+        try {
+            // Wait for Close button to appear (use aria-label check from codegen)
+            await page.getByRole('button', { name: 'Close' }).click({ timeout: 5000 });
+            console.log('  ✓ Clicked "Close" button on modal');
+            await page.waitForTimeout(1500);
+        } catch (err) {
+            console.log('  No "Close" button found (modal may be auto-dismissed)');
+        }
+        
+        // Now the "Reveal Answer" button should be visible
+        console.log('Looking for "Reveal Answer" button...');
+        
+        try {
+            await page.getByRole('button', { name: 'Reveal Answer' }).click({ timeout: 5000 });
+            console.log('  ✓ Clicked "Reveal Answer" button');
+            await page.waitForTimeout(2000);
             
-            if (revealBtn) {
-                console.log('Found reveal button:', revealBtn.textContent);
-                revealBtn.click();
-                return true;
+            // On archive puzzles, a "Nice try!" modal appears after revealing
+            console.log('Checking for post-reveal modal...');
+            try {
+                await page.getByRole('button', { name: 'Close' }).click({ timeout: 3000 });
+                console.log('  ✓ Dismissed "Nice try!" modal');
+                await page.waitForTimeout(2000);  // Extra wait for categories to render after modal closes
+            } catch (err) {
+                console.log('  No post-reveal modal found');
             }
-            return false;
-        });
-        
-        if (buttonClicked) {
-            console.log('Clicked reveal button, waiting for solution...');
-            await new Promise(resolve => setTimeout(resolve, 3000));
-        } else {
-            console.log('No reveal button found, checking if solution already visible...');
+            await page.waitForTimeout(1000);
+        } catch (err) {
+            console.log('  ⚠️ "Reveal Answer" button not found');
         }
+        
+        // Wait for categories to be revealed (they should all be visible now)
+        console.log('Waiting for categories to render...');
+        await page.waitForTimeout(5000);  // Increased from 2s to 5s for archive puzzles
         
         // Take a screenshot for debugging
         const screenshotPath = path.join(__dirname, '../debug-solution.png');
-        await page.screenshot({ path: screenshotPath });
+        await page.screenshot({ path: screenshotPath, fullPage: true });
         console.log(`Screenshot saved to ${screenshotPath}`);
         
-        // Extract the revealed solution
-        const puzzleData = await page.evaluate((metadata) => {
-            const data = {
-                id: metadata.id,
-                date: metadata.date,
-                categories: []
-            };
+        // Extract all revealed categories
+        console.log('Extracting revealed categories...');
+        
+        const categoryDivs = await page.locator('div.css-jtgcyt').all();
+        console.log(`Found ${categoryDivs.length} category divs with css-jtgcyt`);
+        
+        const puzzleData = {
+            id: metadata.id,
+            date: metadata.date,
+            categories: []
+        };
+        
+        for (let idx = 0; idx < categoryDivs.length; idx++) {
+            const div = categoryDivs[idx];
             
-            // Debug: log what we're seeing
-            console.log('Page title:', document.title);
-            console.log('Looking for solved categories...');
+            // Debug: log the full text content of this div
+            const divText = (await div.textContent()).trim();
+            console.log(`\nDiv ${idx + 1} text (first 100 chars): ${divText.substring(0, 100)}`);
             
-            // Try multiple selectors for solved/revealed categories
-            const possibleSelectors = [
-                '.solved-category',
-                '.category',
-                '[class*="solved"]',
-                '[class*="category"]',
-                '[class*="group"]',
-                'div[style*="background-color"]',
-                '.result'
-            ];
+            // Try multiple selector strategies
+            let categoryName = null;
+            let words = [];
             
-            let categoryElements = [];
-            for (const selector of possibleSelectors) {
-                const elements = Array.from(document.querySelectorAll(selector));
-                console.log(`Selector "${selector}" found ${elements.length} elements`);
+            // Strategy 1: Look for .css-1gxnet and .css-z9cpgb
+            const categoryNameEl = div.locator('.css-1gxnet, p.chakra-text.css-1gxnet').first();
+            const wordsEl = div.locator('.css-z9cpgb, p.chakra-text.css-z9cpgb').first();
+            
+            if (await categoryNameEl.count() > 0 && await wordsEl.count() > 0) {
+                categoryName = (await categoryNameEl.textContent()).trim();
+                const wordsText = (await wordsEl.textContent()).trim();
+                words = wordsText.split(',').map(w => w.trim()).filter(w => w.length > 0);
+                console.log(`  Strategy 1 (selectors) found: ${categoryName} - ${words.length} words`);
+            } else {
+                // Strategy 2: Look for bold text within the div
+                // Category names are bold, word lists are regular weight
+                console.log(`  Trying font-weight detection...`);
+                const allTextElements = await div.locator('p, span, div').all();
                 
-                if (elements.length >= 4) {
-                    categoryElements = elements;
-                    console.log('Using selector:', selector);
-                    break;
-                }
-            }
-            
-            // If still nothing, try looking at all divs with background colors
-            if (categoryElements.length === 0) {
-                console.log('Trying all colored divs...');
-                const allDivs = Array.from(document.querySelectorAll('div'));
-                categoryElements = allDivs.filter(div => {
-                    const style = window.getComputedStyle(div);
-                    const bgColor = style.backgroundColor;
-                    // Look for non-white/transparent backgrounds
-                    return bgColor && !bgColor.includes('255, 255, 255') && bgColor !== 'rgba(0, 0, 0, 0)';
-                });
-                console.log(`Found ${categoryElements.length} colored divs`);
-            }
-            
-            console.log(`Processing ${categoryElements.length} category elements...`);
-            
-            categoryElements.forEach((el, idx) => {
-                const text = el.textContent || '';
-                const trimmed = text.trim();
-                
-                console.log(`Element ${idx}: "${trimmed.substring(0, 100)}..."`);
-                
-                // Try multiple parsing strategies
-                let categoryName = '';
-                let words = [];
-                
-                // Strategy 1: Look for structured elements
-                const titleEl = el.querySelector('.category-name, .group-name, .title, h3, h4, strong, [class*="title"], [class*="name"]');
-                const wordsList = el.querySelector('.words, .items, [class*="word"]');
-                
-                if (titleEl && wordsList) {
-                    categoryName = titleEl.textContent.trim();
-                    words = wordsList.textContent.split(/[,\n]/).map(w => w.trim()).filter(w => w.length > 0);
-                } else {
-                    // Strategy 2: Parse as text with category name followed by words
-                    // Pattern: "CATEGORY NAMEWORD1, WORD2, WORD3, WORD4"
-                    // The category is typically all caps or title case, followed by comma-separated words
-                    
-                    // Try to split by commas first
-                    const parts = trimmed.split(',').map(p => p.trim()).filter(p => p.length > 0);
-                    
-                    if (parts.length >= 4) {
-                        // First part might have category name + first word concatenated
-                        const firstPart = parts[0];
+                for (const el of allTextElements) {
+                    try {
+                        const fontWeight = await el.evaluate(node => {
+                            const style = window.getComputedStyle(node);
+                            return style.fontWeight;
+                        });
+                        const text = (await el.textContent()).trim();
                         
-                        // Look for transition from all-caps category to title-case word
-                        // e.g., "TRUST AS REALACCEPT" -> "TRUST AS REAL" + "ACCEPT"
-                        const match = firstPart.match(/^([A-Z\s]+?)([A-Z][a-z].*)$/);
-                        if (match) {
-                            categoryName = match[1].trim();
-                            words = [match[2].trim(), ...parts.slice(1)];
-                        } else {
-                            // Just use first part as category, rest as words
-                            categoryName = firstPart;
-                            words = parts.slice(1);
+                        // Bold font weights are typically 600, 700, or 'bold'
+                        const isBold = fontWeight === 'bold' || parseInt(fontWeight) >= 600;
+                        
+                        if (isBold && text.length > 3 && !text.includes(',')) {
+                            // This is likely the category name (bold, no commas)
+                            if (!categoryName || text.length > categoryName.length) {
+                                categoryName = text;
+                                console.log(`    Found bold text (weight ${fontWeight}): "${text}"`);
+                            }
+                        } else if (!isBold && text.includes(',')) {
+                            // This is likely the word list (not bold, has commas)
+                            const parsedWords = text.split(',').map(w => w.trim()).filter(w => w.length > 0);
+                            if (parsedWords.length === 4 && !words.length) {
+                                words = parsedWords;
+                                console.log(`    Found word list (weight ${fontWeight}): ${words.join(', ')}`);
+                            }
                         }
-                    } else {
-                        // Try splitting by newlines
-                        const lines = trimmed.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
-                        if (lines.length > 0) {
-                            categoryName = lines[0];
-                            words = lines.slice(1);
-                        }
+                    } catch (err) {
+                        // Skip elements that can't be evaluated
                     }
                 }
                 
-                // Clean up words
-                words = words
-                    .filter(w => w.length > 0 && w.length < 20)
-                    .filter(w => !w.match(/^(puzzle|guess|mistake|remaining|category|trust|power|summary|name)/i))
-                    .slice(0, 4); // Take first 4
-                
-                console.log(`  Category: "${categoryName}", Words: [${words.join(', ')}]`);
-                
-                // Only add if we have a name and exactly 4 words
                 if (categoryName && words.length === 4) {
-                    const bgColor = window.getComputedStyle(el).backgroundColor;
-                    
-                    // Determine difficulty from color
-                    let difficulty = idx + 1;
-                    if (bgColor.includes('249, 223, 109') || bgColor.includes('249,223,109')) difficulty = 1;
-                    else if (bgColor.includes('160, 195, 90') || bgColor.includes('160,195,90')) difficulty = 2;
-                    else if (bgColor.includes('176, 196, 239') || bgColor.includes('176,196,239')) difficulty = 3;
-                    else if (bgColor.includes('186, 129, 197') || bgColor.includes('186,129,197')) difficulty = 4;
-                    
-                    data.categories.push({
-                        name: categoryName,
-                        words: words,
-                        difficulty: difficulty,
-                        color: bgColor
-                    });
+                    console.log(`  Strategy 2 (font-weight) found: ${categoryName} - ${words.length} words`);
+                } else {
+                    console.log(`  Strategy 2 incomplete: categoryName="${categoryName}", words.length=${words.length}`);
                 }
-            });
+            }
             
-            console.log(`Final categories extracted: ${data.categories.length}`);
-            
-            // Deduplicate by category name (sometimes rendered multiple times)
-            const seen = new Set();
-            data.categories = data.categories.filter(cat => {
-                if (seen.has(cat.name)) return false;
-                seen.add(cat.name);
-                return true;
-            });
-            
-            console.log(`After deduplication: ${data.categories.length} unique categories`);
-            
-            return data;
-        }, metadata);
+            if (categoryName && words.length === 4) {
+                console.log(`Category ${idx + 1}: ${categoryName} - ${words.join(', ')}`);
+                
+                // Difficulty: 1, 5, 9, 13 (yellow, green, blue, purple)
+                const difficulty = idx * 4 + 1;
+                
+                puzzleData.categories.push({
+                    name: categoryName,
+                    words: words,
+                    difficulty: difficulty,
+                    color: DIFFICULTY_COLORS[difficulty]
+                });
+            } else {
+                console.log(`  Skipped div ${idx + 1}: categoryName=${categoryName}, words.length=${words.length}`);
+            }
+        }
+        
+        console.log(`Final categories extracted: ${puzzleData.categories.length}`);
         
         await browser.close();
         
         if (puzzleData.categories.length === 4) {
             console.log(`✓ Successfully extracted solution with ${puzzleData.categories.length} categories`);
             puzzleData.categories.forEach((cat, idx) => {
-                console.log(`  ${idx + 1}. ${cat.name}: ${cat.words.join(', ')}`);
+                console.log(`  ${idx + 1}. [Difficulty ${cat.difficulty}] ${cat.name}`);
+                console.log(`     ${cat.words.join(', ')}`);
             });
-            
-            // Normalize colors to our standard set
-            puzzleData.categories = puzzleData.categories.map(cat => ({
-                ...cat,
-                color: DIFFICULTY_COLORS[cat.difficulty]
-            }));
             
             return puzzleData;
         } else {
@@ -431,9 +445,13 @@ function addToCollection(puzzleData) {
 // Run if called directly
 const isMainModule = import.meta.url === `file://${process.argv[1]}`;
 if (isMainModule) {
-    getTodaysPuzzle().then((puzzleData) => {
+    // Check for daysAgo argument (default 0 = today)
+    const daysAgo = process.argv[2] ? parseInt(process.argv[2]) : 0;
+    
+    getTodaysPuzzle(daysAgo).then((puzzleData) => {
         if (puzzleData && puzzleData.categories && puzzleData.categories.length === 4) {
-            console.log('\n✓ Daily scrape successful!');
+            const daysLabel = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`;
+            console.log(`\n✓ Scrape successful! (${daysLabel})`);
             console.log(`Puzzle #${puzzleData.id} - ${puzzleData.date}`);
             console.log('Categories:');
             puzzleData.categories.forEach((cat, idx) => {

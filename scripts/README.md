@@ -36,6 +36,53 @@ Categories:
 Run "npm run merge" to add to main puzzle collection
 ```
 
+### `backfill-puzzles.js`
+**Backfill** puzzles from the past N days by navigating the archive.
+
+The backfill script:
+1. Opens connectionsgame.org archive/calendar
+2. Clicks on each date from the past N days
+3. Plays the game to reveal the solution
+4. Collects all puzzles to `data/collected-puzzles.json`
+
+```bash
+# Collect last 7 days (default)
+npm run backfill
+
+# Collect last 3 days
+node scripts/backfill-puzzles.js 3
+
+# Collect last 30 days
+node scripts/backfill-puzzles.js 30
+```
+
+**Output example:**
+```
+╔══════════════════════════════════════════════════════════╗
+║  Connections Puzzle Backfill                             ║
+╚══════════════════════════════════════════════════════════╝
+Collecting puzzles from the last 7 days...
+
+Fetching puzzle for 3/20/2026...
+✓ Successfully extracted puzzle #1013
+  1. [Difficulty 1] Bruno Mars songs
+  2. [Difficulty 5] Types of number
+  ...
+  → Added to collection
+
+────────────────────────────────────────────────────────────
+Backfill Summary:
+  Total attempted: 7
+  Successfully added: 5
+  Already in collection: 2
+  Failed: 0
+────────────────────────────────────────────────────────────
+
+Next steps:
+  1. Run "npm run merge" to merge with main collection
+  2. Run "npm run build" to rebuild the app
+```
+
 ### `scheduler.js`
 Runs the daily scraper automatically at scheduled times (2am, 8am, 2pm, 8pm).
 

@@ -1,7 +1,807 @@
 {
-  "collected": "2026-03-20T05:11:56.781Z",
-  "count": 1,
+  "collected": "2026-03-21T09:01:55.418Z",
+  "count": 17,
   "puzzles": [
+    {
+      "id": 995,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "GYMNASTICS APPARATUS",
+          "words": [
+            "BEAM",
+            "HORSE",
+            "RINGS",
+            "VAULT"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "STATUS",
+          "words": [
+            "POSITION",
+            "RANK",
+            "STANDING",
+            "STATION"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "BASEBALL CALLS",
+          "words": [
+            "BALL",
+            "FOUL",
+            "SAFE",
+            "STRIKE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ CHICKEN",
+          "words": [
+            "FUNKY",
+            "POPCORN",
+            "RUBBER",
+            "SPRING"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 996,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "\"BIG\" THINGS",
+          "words": [
+            "APPLE",
+            "BROTHER",
+            "DIPPER",
+            "MAC"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "BE ADJACENT TO",
+          "words": [
+            "ABUT",
+            "FLANK",
+            "NEIGHBOR",
+            "TOUCH"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "SEEN IN A CLOSET",
+          "words": [
+            "HANGER",
+            "HOOK",
+            "ROD",
+            "SHELF"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "STARTING WITH SYNONYMS FOR \"SPEEDY\"",
+          "words": [
+            "BRISKET",
+            "FASTIDIOUS",
+            "FLEETWOOD",
+            "QUICKSAND"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 997,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "PURSUE",
+          "words": [
+            "HOUND",
+            "SHADOW",
+            "TAIL",
+            "TRACK"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "SPORTSMANLIKE",
+          "words": [
+            "FAIR",
+            "HONEST",
+            "SPORTING",
+            "SQUARE"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "CLASSIC KID GIFTS",
+          "words": [
+            "BIKE",
+            "BOOK",
+            "TOY",
+            "VIDEO GAME"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "\"___ GIRL\" TITLES",
+          "words": [
+            "GONE",
+            "GOSSIP",
+            "NEW",
+            "WORKING"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 998,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "BITS OF HARDWARE",
+          "words": [
+            "BOLT",
+            "NUT",
+            "SCREW",
+            "WASHER"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "PLACES WHERE IDEAS ARE DEVELOPED",
+          "words": [
+            "INCUBATOR",
+            "LAB",
+            "SANDBOX",
+            "TEST BED"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "GO BACK AND FORTH",
+          "words": [
+            "ALTERNATE",
+            "SEESAW",
+            "SWITCH",
+            "TOGGLE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "WHAT \"SUB\" MIGHT REFER TO",
+          "words": [
+            "BELOW",
+            "HERO",
+            "REPLACEMENT",
+            "SUBMARINE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1000,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "$1",
+          "words": [
+            "BUCK",
+            "DOLLAR",
+            "ONE",
+            "SINGLE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "WORDS BEFORE \"CASTLE\"",
+          "words": [
+            "BOUNCY",
+            "NEW",
+            "SAND",
+            "WHITE"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "WHERE YOU MIGHT MAKE A CONNECTION",
+          "words": [
+            "CONNECTIONS",
+            "AIRPORT",
+            "DATING APP",
+            "INTERNET CAFE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "\"WHEREFORE ART THOU ROMEO?\"",
+          "words": [
+            "ART",
+            "ROMEO",
+            "THOU",
+            "WHEREFORE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1001,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "CITIES",
+          "words": [
+            "LIMA",
+            "NICE",
+            "OSAKA",
+            "PHOENIX"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "PALINDROMES",
+          "words": [
+            "EYE",
+            "REFER",
+            "ROTATOR",
+            "SELES"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "HORROR MOVIES MINUS \"S\"",
+          "words": [
+            "GREMLIN",
+            "JAW",
+            "SINNER",
+            "TREMOR"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "STARTING WITH SLANG FOR ZERO",
+          "words": [
+            "JACKET",
+            "NADAL",
+            "SQUATTER",
+            "ZIPPER"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 999,
+      "date": "Saturday, March 21, 2026",
+      "categories": [
+        {
+          "name": "FREELOADER",
+          "words": [
+            "LEECH",
+            "MOOCH",
+            "PARASITE",
+            "SPONGE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "CONCEALING COVER",
+          "words": [
+            "BLANKET",
+            "CLOAK",
+            "CURTAIN",
+            "LAYER"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "WAYS ONE MIGHT REFER TO #",
+          "words": [
+            "HASH",
+            "NUMBER",
+            "POUND",
+            "SHARP"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "WORDS FOR LUCIDITY, IN THE SINGULAR",
+          "words": [
+            "FACULTY",
+            "MARBLE",
+            "SENSE",
+            "WIT"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1003,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "COOK WITH DRY HEAT",
+          "words": [
+            "BROWN",
+            "ROAST",
+            "SEAR",
+            "TOAST"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "FAMILIAL NICKNAMES",
+          "words": [
+            "CUZ",
+            "GRAM",
+            "POP",
+            "UNC"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "U.S. STATE ABBREVIATIONS",
+          "words": [
+            "MASS",
+            "MISS",
+            "PENN",
+            "WASH"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "PUNCH",
+          "words": [
+            "BOX",
+            "DUKE",
+            "SLUG",
+            "SOCK"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1005,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "PLACES TO FIND SAND",
+          "words": [
+            "BUNKER",
+            "DESERT",
+            "HOURGLASS",
+            "SANDBOX"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "THINGS THAT MOVE BACK AND FORTH",
+          "words": [
+            "METRONOME",
+            "PENDULUM",
+            "SWING",
+            "WINDSHIELD WIPER"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "APPARATUS-BASED EXERCISE CLASSES",
+          "words": [
+            "BARRE",
+            "REFORMER",
+            "SPIN",
+            "STEP"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "FEATURING BIRDS",
+          "words": [
+            "CUCKOO CLOCK",
+            "FROOT LOOPS",
+            "MEXICAN FLAG",
+            "WEATHER VANE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1007,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "HYPNOTIC STATE",
+          "words": [
+            "DREAM",
+            "HAZE",
+            "SPELL",
+            "TRANCE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "STARTING WITH PREFIXES MEANING \"TWO\"",
+          "words": [
+            "BINARY",
+            "DIOXIDE",
+            "DUOLINGO",
+            "TWILIGHT"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "FICTIONAL INSPECTORS",
+          "words": [
+            "CLOUSEAU",
+            "GADGET",
+            "JAVERT",
+            "MORSE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "ENDING IN FEMALE ANIMALS",
+          "words": [
+            "HOOTENANNY",
+            "LICHEN",
+            "MOSCOW",
+            "NIGHTMARE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1008,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "GREEDILY CONTROL",
+          "words": [
+            "BOGART",
+            "CORNER",
+            "HOG",
+            "MONOPOLIZE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "TOOTHED WHEELS",
+          "words": [
+            "COG",
+            "GEAR",
+            "PINION",
+            "SPROCKET"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "PORTMANTEAUX",
+          "words": [
+            "BLOG",
+            "MOTEL",
+            "SMOG",
+            "SPORK"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "BULL___",
+          "words": [
+            "DOG",
+            "DOZE",
+            "FROG",
+            "HORN"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1009,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "ANIMAL GROUP NAMES",
+          "words": [
+            "GAGGLE",
+            "PACK",
+            "POD",
+            "PRIDE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "THINGS ASSOCIATED WITH BEING SLOW",
+          "words": [
+            "GLACIER",
+            "MOLASSES",
+            "SLOTH",
+            "TRAFFIC"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "SILENT \"W\"",
+          "words": [
+            "CARTWRIGHT",
+            "TWO",
+            "WRATH",
+            "WRESTLE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "WORDS THAT SOUND LIKE STATE ABBREVIATIONS",
+          "words": [
+            "ANY",
+            "EMMY",
+            "ENVY",
+            "OKAY"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1010,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "METAPHORS FOR TROUBLE",
+          "words": [
+            "BIND",
+            "HOT WATER",
+            "JAM",
+            "PICKLE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "MUSIC THEORY CONCEPTS",
+          "words": [
+            "KEY",
+            "PITCH",
+            "SCALE",
+            "TONE"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "THINGS WITH STRINGS",
+          "words": [
+            "BALLOON",
+            "KITE",
+            "TEA BAG",
+            "YO-YO"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "METAPHORS FOR QUICKNESS",
+          "words": [
+            "ARROW",
+            "LIGHTNING",
+            "ROCKET",
+            "WIND"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1011,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "INTERVAL",
+          "words": [
+            "PATCH",
+            "PERIOD",
+            "SPELL",
+            "STRETCH"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "REACT TO A STUBBED TOE",
+          "words": [
+            "CURSE",
+            "HOP",
+            "WINCE",
+            "YELL"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "GUITAR EFFECTS PEDALS",
+          "words": [
+            "DELAY",
+            "REVERB",
+            "WAH",
+            "WHAMMY"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ CHECK",
+          "words": [
+            "BLANK",
+            "COAT",
+            "RAIN",
+            "REALITY"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1006,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "\"NO THANKS\"",
+          "words": [
+            "LATER",
+            "NAH",
+            "NEXT TIME",
+            "PASS"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "KINDS OF NUMBERS",
+          "words": [
+            "EVEN",
+            "IRRATIONAL",
+            "PERFECT",
+            "PRIME"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "KINDS OF WALLS",
+          "words": [
+            "BERLIN",
+            "BRICK",
+            "FOURTH",
+            "GREAT"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "HOMOPHONES OF NON-NUMERIC AMOUNTS",
+          "words": [
+            "AWL",
+            "NUN",
+            "PHEW",
+            "SUM"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1012,
+      "date": "Friday, March 20, 2026",
+      "categories": [
+        {
+          "name": "FOLK TALE CHARACTERSCHICKEN LITT",
+          "words": [
+            "LE",
+            "FROG PRINCE",
+            "GINGERBREAD MAN",
+            "GOLDILOCKS"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "GOOD LUCK SYMBOLSEVIL E",
+          "words": [
+            "YE",
+            "FOUR-LEAF CLOVER",
+            "HORSESHOE",
+            "RABBIT'S FOOT"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "THINGS THAT CHANGE COLOR",
+          "words": [
+            "CHAMELEON",
+            "MOOD RING",
+            "SUNSET",
+            "TRAFFIC LIGHT"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "ENDING IN MUSIC GENRES",
+          "words": [
+            "BABY BLUES",
+            "PET ROCK",
+            "SCRAP METAL",
+            "SODA POP"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
     {
       "id": 1013,
       "date": "Friday, March 20, 2026",
