@@ -1,4 +1,4 @@
-.PHONY: help count list incomplete summary progress scrape resume retry retry-missing
+.PHONY: help count list incomplete summary progress gaps scrape resume retry retry-missing
 
 help:
 	@echo "Available commands:"
@@ -7,6 +7,7 @@ help:
 	@echo "  make summary     - Show first and last 10 puzzles"
 	@echo "  make incomplete  - Find puzzles with incomplete categories"
 	@echo "  make progress    - Check current scraper progress"
+	@echo "  make gaps        - Show missing puzzle IDs in collection"
 	@echo "  make scrape      - Run scraper for N days (default: 20)"
 	@echo "  make resume      - Auto-resume from oldest puzzle (default: 300 days)"
 	@echo "  make retry IDS='881 883' - Retry specific puzzle IDs"
@@ -34,6 +35,25 @@ progress:
 	@echo ""
 	@echo "Running scrapers:"
 	@pgrep -af "daily-scraper" || echo "No scrapers running"
+
+gaps:
+	@echo "Analyzing collection for missing puzzles..."
+	@jq -r '.puzzles | map(.id) | sort | @sh' data/collected-puzzles.json | \
+	xargs bash -c 'ids=($$@); min=$${ids[0]}; max=$${ids[-1]}; \
+	missing=(); \
+	for ((i=min; i<=max; i++)); do \
+		found=0; \
+		for id in "$${ids[@]}"; do \
+			if [ "$$id" = "$$i" ]; then found=1; break; fi; \
+		done; \
+		if [ $$found -eq 0 ]; then missing+=($$i); fi; \
+	done; \
+	if [ $${#missing[@]} -eq 0 ]; then \
+		echo "✓ No gaps found! Collection is complete from $$min to $$max."; \
+	else \
+		echo "Found $${#missing[@]} missing puzzle(s) between $$min and $$max:"; \
+		echo "$${missing[@]}"; \
+	fi' --
 
 scrape:
 	@bash scripts/scrape-range.sh $(or $(DAYS),20)
