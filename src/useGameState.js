@@ -1,19 +1,41 @@
 import { useState, useEffect } from 'react';
 
 const GAME_STATE_KEY = 'conjakeions-plus-game-state';
+const STATE_VERSION = 2; // Increment when data format changes
+const MAX_AGE_HOURS = 48; // Clear state older than 48 hours
 
 const getDefaultGameState = () => ({
   currentPuzzleIndex: 0,
   solved: [],
   mistakes: 0,
   revealed: false,
+  version: STATE_VERSION,
 });
 
 const loadGameState = () => {
   try {
     const stored = localStorage.getItem(GAME_STATE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const state = JSON.parse(stored);
+      
+      // Check version compatibility
+      if (state.version !== STATE_VERSION) {
+        console.log('Game state version mismatch - clearing stale state');
+        clearGameState();
+        return getDefaultGameState();
+      }
+      
+      // Check age (clear old saved games)
+      if (state.savedAt) {
+        const ageHours = (Date.now() - state.savedAt) / (1000 * 60 * 60);
+        if (ageHours > MAX_AGE_HOURS) {
+          console.log('Game state too old - clearing stale state');
+          clearGameState();
+          return getDefaultGameState();
+        }
+      }
+      
+      return state;
     }
   } catch (error) {
     console.error('Error loading game state:', error);
@@ -26,6 +48,7 @@ const saveGameState = (state) => {
     const stateToSave = {
       ...state,
       savedAt: Date.now(),
+      version: STATE_VERSION,
     };
     localStorage.setItem(GAME_STATE_KEY, JSON.stringify(stateToSave));
   } catch (error) {
