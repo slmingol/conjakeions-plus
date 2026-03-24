@@ -23,3 +23,11 @@ yarn-error.log*
 urls.txt
 
 .vscode/
+
+# Backup files and logs
+*.backup*
+*.log
+*-results.log
+
+# Debug scripts
+scripts/debug-*.js
