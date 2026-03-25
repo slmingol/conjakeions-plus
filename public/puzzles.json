@@ -1,55 +1,5 @@
 [
   {
-    "id": null,
-    "date": "March 25, 2026",
-    "categories": [
-      {
-        "name": "OBFUSCATE",
-        "words": [
-          "BLUR",
-          "CLOUD",
-          "MUDDY",
-          "OBSCURE"
-        ],
-        "difficulty": 1,
-        "color": "#F9DF6D"
-      },
-      {
-        "name": "MAGAZINES",
-        "words": [
-          "FORTUNE",
-          "PEOPLE",
-          "SPIN",
-          "TIME"
-        ],
-        "difficulty": 5,
-        "color": "#A0C35A"
-      },
-      {
-        "name": "PAYMENT METHODS",
-        "words": [
-          "CASH",
-          "CHARGE",
-          "CHECK",
-          "WIRE"
-        ],
-        "difficulty": 9,
-        "color": "#B0C4EF"
-      },
-      {
-        "name": "UNITS OF VOLUME WITH LAST LETTER CHANGED",
-        "words": [
-          "CUR",
-          "GALLOP",
-          "PING",
-          "QUARK"
-        ],
-        "difficulty": 13,
-        "color": "#BA81C5"
-      }
-    ]
-  },
-  {
     "id": 1,
     "date": "2023-06-12",
     "categories": [
@@ -50898,7 +50848,7 @@
   },
   {
     "id": 1018,
-    "date": "1018March 25, 2026",
+    "date": "March 25, 2026",
     "categories": [
       {
         "name": "OBFUSCATE",
