@@ -38,6 +38,7 @@ function App() {
   const [showAdmin, setShowAdmin] = useState(false);
   const [statsRecorded, setStatsRecorded] = useState(false);
   const [puzzleAttemptRecorded, setPuzzleAttemptRecorded] = useState(false);
+  const [proximityHighlight, setProximityHighlight] = useState([]);
   
   const currentPuzzle = puzzlesData[currentPuzzleIndex];
   const PUZZLE_DATA = currentPuzzle.categories.map(cat => ({
@@ -84,6 +85,7 @@ function App() {
       setRevealed(false);
       setStatsRecorded(false);
       setPuzzleAttemptRecorded(false);
+      setProximityHighlight([]);
     }
   }, [currentPuzzleIndex]);
 
@@ -193,6 +195,7 @@ function App() {
   function handleClear() {
     setSelected([]);
     setMessage('');
+    setProximityHighlight([]);
   }
 
   function handleSubmit() {
@@ -233,12 +236,25 @@ function App() {
       setMistakes(mistakes + 1);
       
       if (maxMatch === 3) {
-        setMessage('One away...');
+        // Find the category with 3 matches
+        const matchedCategory = Object.entries(categoryCounts).find(([cat, count]) => count === 3)?.[0];
+        if (matchedCategory) {
+          // Highlight the 3 correct words
+          const correctWords = selectedWords.filter(w => w.category === matchedCategory).map(w => w.text);
+          setProximityHighlight(correctWords);
+        }
+        setMessage('🔥 One away!');
       } else if (maxMatch === 2) {
-        setMessage('Try again!');
+        setMessage('💡 Two away!');
       } else {
         setMessage('Not quite. Keep trying!');
       }
+      
+      // Auto-clear message and highlights after 3.5 seconds
+      setTimeout(() => {
+        setMessage('');
+        setProximityHighlight([]);
+      }, 3500);
       
       setSelected([]);
     }
@@ -433,7 +449,7 @@ function App() {
           {words.filter(w => !isWordSolved(w)).map((word, idx) => (
             <button
               key={idx}
-              className={`word-button ${selected.includes(word.text) ? 'selected' : ''}`}
+              className={`word-button ${selected.includes(word.text) ? 'selected' : ''} ${proximityHighlight.includes(word.text) ? 'proximity-highlight' : ''}`}
               onClick={() => handleWordClick(word)}
               disabled={gameOver}
             >
@@ -471,8 +487,8 @@ function App() {
         )}
 
         {/* Message */}
-        {gameOver && message && (
-          <div className={`message ${gameOver ? 'game-over' : ''}`}>
+        {message && (
+          <div className={`message ${gameOver ? 'game-over' : 'hint-popup'}`}>
             {message}
           </div>
         )}
