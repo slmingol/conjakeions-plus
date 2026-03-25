@@ -1,0 +1,192 @@
+#!/usr/bin/env node
+/**
+ * Auto-backfill script - Automatically checks and fills missing puzzles from last 7 days
+ * Runs on app startup or periodically to ensure complete puzzle collection
+ */
+
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DAYS_TO_CHECK = 7;
+const dataPath = path.join(__dirname, '../data/collected-puzzles.json');
+const srcPath = path.join(__dirname, '../src/puzzles.json');
+
+/**
+ * Get date string in YYYY-MM-DD format
+ */
+function getDateString(daysAgo = 0) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysAgo);
+    return date.toISOString().split('T')[0];
+}
+
+/**
+ * Normalize date to ISO format (YYYY-MM-DD) for comparison
+ */
+function normalizeDate(dateStr) {
+    try {
+        // Handle various formats: "March 25, 2026", "2026-03-25", "1018March 25, 2026"
+        // Remove any leading digits+non-space chars (e.g., "1018March" -> "March")
+        const cleaned = dateStr.replace(/^\d+(?=[A-Z])/,'');
+        const date = new Date(cleaned);
+        if (isNaN(date.getTime())) {
+            return dateStr; // Return original if parsing fails
+        }
+        return date.toISOString().split('T')[0];
+    } catch {
+        return dateStr;
+    }
+}
+
+/**
+ * Check which puzzles from the last N days are missing
+ */
+function getMissingDates() {
+    console.log(`\n[Auto-Backfill] Checking for missing puzzles from last ${DAYS_TO_CHECK} days...`);
+    
+   // Load existing puzzles
+    let existingPuzzles = [];
+    if (fs.existsSync(srcPath)) {
+        existingPuzzles = JSON.parse(fs.readFileSync(srcPath, 'utf8'));
+    }
+    
+    // Build set of existing dates (normalized to ISO format)
+    const existingDates = new Set(
+        existingPuzzles
+            .map(p => normalizeDate(p.date))
+            .filter(d => d && d.includes('-')) // Only valid ISO dates
+    );
+    
+    console.log(`  Found ${existingDates.size} existing puzzles with valid dates`);
+    
+    // Check last N days
+    const missingDays = [];
+    for (let i = 0; i < DAYS_TO_CHECK; i++) {
+        const dateStr = getDateString(i);
+        if (!existingDates.has(dateStr)) {
+            missingDays.push(i);
+            console.log(`  ⚠️  Missing: ${dateStr} (${i} days ago)`);
+        } else {
+            console.log(`  ✓  Found: ${dateStr}`);
+        }
+    }
+    
+    return missingDays;
+}
+
+/**
+ * Run the daily scraper for a specific day
+ */
+async function scrapePuzzle(daysAgo) {
+    return new Promise((resolve) => {
+        console.log(`\n[Auto-Backfill] Scraping puzzle from ${daysAgo} days ago...`);
+        
+        const scraperPath = path.join(__dirname, 'daily-scraper.js');
+        const scraper = spawn('node', [scraperPath, daysAgo.toString()], {
+            stdio: 'inherit',
+            cwd: path.join(__dirname, '..')
+        });
+        
+        scraper.on('close', (code) => {
+            if (code === 0) {
+                console.log(`✓ Successfully scraped puzzle from ${daysAgo} days ago`);
+                resolve(true);
+            } else {
+                console.log(`✗ Failed to scrape puzzle from ${daysAgo} days ago (exit code: ${code})`);
+                resolve(false);
+            }
+        });
+    });
+}
+
+/**
+ * Merge collected puzzles into main collection
+ */
+async function mergePuzzles() {
+    return new Promise((resolve) => {
+        console.log('\n[Auto-Backfill] Merging collected puzzles into main collection...');
+        
+        const mergePath = path.join(__dirname, 'merge-puzzles.js');
+        const merger = spawn('node', [mergePath], {
+            stdio: 'inherit',
+            cwd: path.join(__dirname, '..')
+        });
+        
+        merger.on('close', (code) => {
+            if (code === 0) {
+                console.log('✓ Successfully merged puzzles');
+                resolve(true);
+            } else {
+                console.log('✗ Failed to merge puzzles');
+                resolve(false);
+            }
+        });
+    });
+}
+
+/**
+ * Main auto-backfill logic
+ */
+async function main() {
+    console.log('╔════════════════════════════════════════════════════════╗');
+    console.log('║  Conjakeions+ Auto-Backfill                            ║');
+    console.log('╚════════════════════════════════════════════════════════╝');
+    
+    const missingDays = getMissingDates();
+    
+    if (missingDays.length === 0) {
+        console.log('\n✓ All puzzles from last 7 days are present. No backfill needed.');
+        process.exit(0);
+    }
+    
+    console.log(`\n⚠️  Found ${missingDays.length} missing puzzle(s). Starting backfill...`);
+    
+    let successCount = 0;
+    let failCount = 0;
+    
+    // Scrape missing puzzles one by one
+    for (const daysAgo of missingDays) {
+        const success = await scrapePuzzle(daysAgo);
+        if (success) {
+            successCount++;
+        } else {
+            failCount++;
+        }
+        
+        // Wait between scrapes to avoid overwhelming the source
+        if (daysAgo !== missingDays[missingDays.length - 1]) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+    }
+    
+    console.log('\n────────────────────────────────────────────────────────');
+    console.log(`Backfill Summary:`);
+    console.log(`  Successfully scraped: ${successCount}`);
+    console.log(`  Failed: ${failCount}`);
+    console.log('────────────────────────────────────────────────────────');
+    
+    // Merge if we successfully scraped anything
+    if (successCount > 0) {
+        await mergePuzzles();
+        console.log('\n✓ Auto-backfill complete!');
+    } else {
+        console.log('\n⚠️  No puzzles were successfully scraped.');
+    }
+    
+    process.exit(failCount > 0 ? 1 : 0);
+}
+
+// Run if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+    main().catch(err => {
+        console.error('Fatal error:', err);
+        process.exit(1);
+    });
+}
+
+export { getMissingDates, scrapePuzzle, mergePuzzles, normalizeDate };

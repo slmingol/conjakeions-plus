@@ -89,7 +89,8 @@ async function getTodaysPuzzle(daysAgo = 0) {
         }
         
         // Extract date (format: "November 29, 2025")
-        const dateMatch = puzzleText.match(/\w+\s+\d+,\s*\d{4}/);
+        // Use [A-Za-z]+ to match only letters (not \w+ which includes digits)
+        const dateMatch = puzzleText.match(/[A-Za-z]+\s+\d+,\s*\d{4}/);
         if (dateMatch) {
             metadata.date = dateMatch[0];
         } else {
