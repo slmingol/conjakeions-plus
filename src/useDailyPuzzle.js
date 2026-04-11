@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 /**
  * Normalize date to YYYY-MM-DD format for comparison
+ * Note: Fixed infinite loop in useEffect (v2.16.36) - use [puzzles.length] not [puzzles]
  */
 const normalizeDate = (dateStr) => {
   try {
