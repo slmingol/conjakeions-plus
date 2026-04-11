@@ -146,11 +146,34 @@ async function main() {
     
     console.log(`\n⚠️  Found ${missingDays.length} missing puzzle(s). Starting backfill...`);
     
+    // Check if collection file exists - if not, we need to fetch today first
+    const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
+    if (!fs.existsSync(collectionPath) || !fs.existsSync(path.join(__dirname, '../data'))) {
+        console.log('\n⚠️  Collection file not found. Fetching today\'s puzzle first to bootstrap...');
+        
+        // Create data directory if it doesn't exist
+        const dataDir = path.join(__dirname, '../data');
+        if (!fs.existsSync(dataDir)) {
+            fs.mkdirSync(dataDir, { recursive: true });
+        }
+        
+        // Fetch today's puzzle first (daysAgo = 0)
+        const todaySuccess = await scrapePuzzle(0);
+        if (!todaySuccess) {
+            console.log('\n⚠️  Failed to fetch today\'s puzzle. Cannot proceed with backfill.');
+            process.exit(1);
+        }
+        
+        // Wait a bit before backfilling
+        await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
     let successCount = 0;
     let failCount = 0;
     
-    // Scrape missing puzzles one by one
-    for (const daysAgo of missingDays) {
+    // Scrape missing puzzles one by one (skip day 0 if we just fetched it)
+    const daysToFetch = missingDays.filter(d => d !== 0 || !fs.existsSync(collectionPath));
+    for (const daysAgo of daysToFetch) {
         const success = await scrapePuzzle(daysAgo);
         if (success) {
             successCount++;
@@ -159,7 +182,7 @@ async function main() {
         }
         
         // Wait between scrapes to avoid overwhelming the source
-        if (daysAgo !== missingDays[missingDays.length - 1]) {
+        if (daysAgo !== daysToFetch[daysToFetch.length - 1]) {
             await new Promise(resolve => setTimeout(resolve, 2000));
         }
     }
