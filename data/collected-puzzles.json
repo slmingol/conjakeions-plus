@@ -1,7 +1,557 @@
 {
-  "collected": "2026-04-11T11:22:23.481Z",
-  "count": 1025,
+  "collected": "2026-04-11T13:13:17.773Z",
+  "count": 1036,
   "puzzles": [
+    {
+      "id": 1029,
+      "date": "April 5, 2026",
+      "categories": [
+        {
+          "name": "ATOMIC STRUCTURE TERMS",
+          "words": [
+            "ELECTRON",
+            "NUCLEUS",
+            "ORBIT",
+            "SHELL"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "PARTS OF A SHERLOCK HOLMES COSTUME",
+          "words": [
+            "DEERSTALKER",
+            "MAGNIFYING GLASS",
+            "PIPE",
+            "VIOLIN"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "THINGS TO FLIP",
+          "words": [
+            "COIN",
+            "LIGHT SWITCH",
+            "PANCAKE",
+            "THE BIRD"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "STARTING WITH SYNONYMS FOR \"SLUSH\"",
+          "words": [
+            "GOOGOL",
+            "MUSHROOM",
+            "PASTEURIZE",
+            "PULPIT"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1028,
+      "date": "April 4, 2026",
+      "categories": [
+        {
+          "name": "\"LET SLEEPING DOGS LIE\"",
+          "words": [
+            "DOGS",
+            "LET",
+            "LIE",
+            "SLEEPING"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "OBSCURE",
+          "words": [
+            "COVER",
+            "MASK",
+            "SCREEN",
+            "SHIELD"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "COASTAL LANDFORMS",
+          "words": [
+            "BLUFF",
+            "CAPE",
+            "POINT",
+            "SPIT"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ CAMP",
+          "words": [
+            "BAND",
+            "BASE",
+            "BOOT",
+            "SUMMER"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1027,
+      "date": "April 3, 2026",
+      "categories": [
+        {
+          "name": "CATTY",
+          "words": [
+            "MEAN",
+            "PETTY",
+            "SMALL",
+            "SNIDE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "HANKER (FOR)",
+          "words": [
+            "JONES",
+            "LONG",
+            "LUST",
+            "THIRST"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "COCKTAIL GLASSES",
+          "words": [
+            "COLLINS",
+            "HURRICANE",
+            "ROCKS",
+            "ZOMBIE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ CONTROL",
+          "words": [
+            "CRUISE",
+            "DAMAGE",
+            "GROUND",
+            "MISSION"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1026,
+      "date": "April 2, 2026",
+      "categories": [
+        {
+          "name": "SUPPORT",
+          "words": [
+            "BACK",
+            "CHAMPION",
+            "ENDORSE",
+            "SECOND"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "OPPORTUNITY",
+          "words": [
+            "CHANCE",
+            "MOMENT",
+            "OPENING",
+            "WINDOW"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "MALE ANIMALS",
+          "words": [
+            "BUCK",
+            "DRAKE",
+            "DRONE",
+            "STALLION"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "ENDS OF LIQUOR BRANDS",
+          "words": [
+            "CARDI",
+            "EATER",
+            "MESON",
+            "MIGOS"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1025,
+      "date": "April 1, 2026",
+      "categories": [
+        {
+          "name": "BEER BRANDS",
+          "words": [
+            "BLUE MOON",
+            "DOS EQUIS",
+            "MILLER HIGH LIFE",
+            "RED STRIPE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "ROCK BANDS",
+          "words": [
+            "GREEN DAY",
+            "PINK FLOYD",
+            "THREE DOORS DOWN",
+            "U2"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "MOVIES",
+          "words": [
+            "BACK TO THE FUTURE",
+            "BLUE VELVET",
+            "SINGIN' IN THE RAIN",
+            "TOP GUN"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "U.S. CITY NICKNAMES",
+          "words": [
+            "BIG APPLE",
+            "BIG EASY",
+            "MILE HIGH CITY",
+            "SECOND CITY"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1024,
+      "date": "March 31, 2026",
+      "categories": [
+        {
+          "name": "SHORTAGE",
+          "words": [
+            "ABSENCE",
+            "CRUNCH",
+            "DEFICIT",
+            "PINCH"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "PARTS OF A PIRATE SHIP",
+          "words": [
+            "CANNON",
+            "CROW'S NEST",
+            "JOLLY ROGER",
+            "PLANK"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "KINDS OF BRAS",
+          "words": [
+            "PLUNGE",
+            "PUSH-UP",
+            "SPORTS",
+            "WIRELESS"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "STARTING WITH BABY ANIMALS",
+          "words": [
+            "CALF RAISE",
+            "CHICK FLICK",
+            "FRY COOK",
+            "KIT KAT"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1023,
+      "date": "March 30, 2026",
+      "categories": [
+        {
+          "name": "IMITATION",
+          "words": [
+            "DUMMY",
+            "ERSATZ",
+            "FAUX",
+            "MOCK"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "PLAY AROUND (WITH)",
+          "words": [
+            "FUTZ",
+            "MESS",
+            "TINKER",
+            "TOY"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "CAR RENTAL COMPANIES",
+          "words": [
+            "AVIS",
+            "BUDGET",
+            "DOLLAR",
+            "HERTZ"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "SNACK BRANDS PLUS STARTING LETTER",
+          "words": [
+            "FRITZ",
+            "PLAYS",
+            "TRUFFLES",
+            "YUTZ"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1022,
+      "date": "March 29, 2026",
+      "categories": [
+        {
+          "name": "IMAGES SEEN ON THE STREET",
+          "words": [
+            "GRAFFITI",
+            "MURAL",
+            "POSTER",
+            "STENCIL"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "RETRO DANCE CRAZES",
+          "words": [
+            "HUSTLE",
+            "MASHED POTATO",
+            "ROBOT",
+            "TWIST"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "SILENT \"P\"",
+          "words": [
+            "CORPS",
+            "COUP",
+            "PSYCHO",
+            "RECEIPT"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ MARK",
+          "words": [
+            "BEAUTY",
+            "CHECK",
+            "QUESTION",
+            "STRETCH"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1021,
+      "date": "March 28, 2026",
+      "categories": [
+        {
+          "name": "STEP ONTO, AS A VEHICLE",
+          "words": [
+            "BOARD",
+            "EMBARK",
+            "ENTER",
+            "MOUNT"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "QUANTITIES IN MECHANICS",
+          "words": [
+            "ACCELERATION",
+            "FORCE",
+            "MASS",
+            "MOMENTUM"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "TEXTBOOK IMAGES",
+          "words": [
+            "FIGURE",
+            "ILLUSTRATION",
+            "PICTURE",
+            "PLATE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___ PLANT",
+          "words": [
+            "FACE",
+            "PITCHER",
+            "POWER",
+            "ROBERT"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1020,
+      "date": "March 27, 2026",
+      "categories": [
+        {
+          "name": "WHAT IT ALL BOILS DOWN TO",
+          "words": [
+            "BASIC FACTS",
+            "BOTTOM LINE",
+            "BRASS TACKS",
+            "NITTY-GRITTY"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "FEATURES OF AN AIRPORT TERMINAL",
+          "words": [
+            "BAGGAGE CLAIM",
+            "DUTY-FREE",
+            "FOOD COURT",
+            "TICKET COUNTER"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "THINGS THAT ARE ORANGE",
+          "words": [
+            "GOLDFISH CRACKER",
+            "MONARCH BUTTERFLY",
+            "THE LORAX",
+            "TRAFFIC CONE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "ENDING IN WORDS FOR CELLULAR CONNECTIVITY",
+          "words": [
+            "LIP SERVICE",
+            "MONKEY BARS",
+            "TURN SIGNAL",
+            "WEDDING RECEPTION"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1019,
+      "date": "March 26, 2026",
+      "categories": [
+        {
+          "name": "FOOD PROCUREMENT METHODS",
+          "words": [
+            "AGRICULTURE",
+            "FISHING",
+            "GATHERING",
+            "HUNTING"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "MEMBER OF A DETROIT SPORTS TEAM",
+          "words": [
+            "LION",
+            "PISTON",
+            "RED WING",
+            "TIGER"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "FEATURES OF A CLASSIC VOTING BOOTH",
+          "words": [
+            "BALLOT",
+            "BOOTH",
+            "CURTAIN",
+            "LEVER"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "THEY HAVE BOLTS",
+          "words": [
+            "FRANKENSTEIN'S MONSTER",
+            "HARDWARE STORE",
+            "LIGHTNING",
+            "LOCK"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
     {
       "id": 1030,
       "date": "April 6, 2026",
