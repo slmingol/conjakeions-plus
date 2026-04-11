@@ -163,6 +163,23 @@ You can set up GitHub Actions to:
 
 See `.github/workflows/` for examples from cat-climber project.
 
+## Example Scripts (Not Part of Regular Workflow)
+
+### `backfill-missing.js`
+**One-time script** created on April 11, 2026 to backfill specific missing puzzles #1019-1029.
+
+This script is **hardcoded** for a specific date range and is not generic. It's kept as an example of how to:
+- Calculate `daysAgo` parameter from puzzle IDs
+- Run multiple scrapes in sequence with delays
+- Automatically merge results after completion
+
+**Not intended for regular use** - use `auto-backfill.js` or `backfill-puzzles.js` instead for ongoing backfills.
+
+```bash
+# Example only - hardcoded for puzzles 1019-1029
+node scripts/backfill-missing.js
+```
+
 ## Data Files
 
 - `data/collected-puzzles.json` - Scraped/collected puzzles (can include partial/incomplete)
