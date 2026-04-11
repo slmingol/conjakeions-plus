@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Normalize date to YYYY-MM-DD format for comparison
@@ -51,18 +51,26 @@ export const getDailyPuzzleIndex = (puzzles) => {
 
 /**
  * Hook to manage daily puzzle state
- * Uses useMemo to avoid infinite re-render loops
+ * Calculate daily index once when puzzles loads, never update during session
  */
 export const useDailyPuzzle = (puzzles) => {
-  // Calculate daily puzzle index using useMemo - only recalculates when puzzles array changes
-  const dailyPuzzleIndex = useMemo(() => {
-    return getDailyPuzzleIndex(puzzles);
-  }, [puzzles]);
-
+  const [dailyPuzzleIndex, setDailyPuzzleIndex] = useState(0);
   const [isPlayingDaily, setIsPlayingDaily] = useState(true);
+  const hasInitialized = useRef(false);
+
+  // Calculate daily puzzle index ONCE when puzzles first loads
+  // Using a ref to ensure this only happens once, ever
+  useEffect(() => {
+    if (puzzles.length > 0 && !hasInitialized.current) {
+      setDailyPuzzleIndex(getDailyPuzzleIndex(puzzles));
+      hasInitialized.current = true;
+    }
+  }, [puzzles.length]); // Only depend on length, not the full array
 
   // Set up midnight reload timer (runs once on mount)
   useEffect(() => {
+    if (puzzles.length === 0) return;
+    
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
