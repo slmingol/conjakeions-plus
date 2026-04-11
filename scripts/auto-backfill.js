@@ -147,12 +147,17 @@ async function main() {
     console.log(`\n⚠️  Found ${missingDays.length} missing puzzle(s). Starting backfill...`);
     
     // Check if collection file exists - if not, we need to fetch today first
-    const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
-    if (!fs.existsSync(collectionPath) || !fs.existsSync(path.join(__dirname, '../data'))) {
+    const isContainer = fs.existsSync('/usr/share/nginx/html/');
+    const collectionPath = isContainer 
+        ? '/usr/share/nginx/html/collected-puzzles.json'
+        : path.join(__dirname, '../data/collected-puzzles.json');
+    const dataDir = isContainer ? '/usr/share/nginx/html' : path.join(__dirname, '../data');
+    
+    if (!fs.existsSync(collectionPath)) {
         console.log('\n⚠️  Collection file not found. Fetching today\'s puzzle first to bootstrap...');
+        console.log(`   Looking for: ${collectionPath}`);
         
         // Create data directory if it doesn't exist
-        const dataDir = path.join(__dirname, '../data');
         if (!fs.existsSync(dataDir)) {
             fs.mkdirSync(dataDir, { recursive: true });
         }

@@ -65,11 +65,15 @@ async function getTodaysPuzzle(daysAgo = 0) {
             await page.waitForTimeout(3000);
         } else {
             // Calculate target puzzle number from collection
-            const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
+            const isContainer = fs.existsSync('/usr/share/nginx/html/');
+            const collectionPath = isContainer 
+                ? '/usr/share/nginx/html/collected-puzzles.json'
+                : path.join(__dirname, '../data/collected-puzzles.json');
             
             // Check if collection exists
             if (!fs.existsSync(collectionPath)) {
                 console.log('⚠️  Collection file not found. Cannot calculate puzzle number for past dates.');
+                console.log(`   Looking for: ${collectionPath}`);
                 console.log('   Fetch today\'s puzzle first (daysAgo=0) to initialize the collection.');
                 return null;
             }
