@@ -1,7 +1,307 @@
 {
-  "collected": "2026-03-25T17:32:18.936Z",
-  "count": 1019,
+  "collected": "2026-04-11T11:22:23.481Z",
+  "count": 1025,
   "puzzles": [
+    {
+      "id": 1030,
+      "date": "April 6, 2026",
+      "categories": [
+        {
+          "name": "EVENTS WITH DANCING",
+          "words": [
+            "BALL",
+            "HOEDOWN",
+            "HOP",
+            "RAVE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "INTEREST",
+          "words": [
+            "CLAIM",
+            "CONCERN",
+            "SHARE",
+            "STAKE"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "COMPONENTS OF WHAC-A-MOLE",
+          "words": [
+            "HOLES",
+            "MALLET",
+            "MOLE",
+            "TIMER"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "MUSICALS WITH LAST LETTER CHANGED",
+          "words": [
+            "CAROUSER",
+            "EVITE",
+            "OLIVES",
+            "WICKET"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1031,
+      "date": "April 7, 2026",
+      "categories": [
+        {
+          "name": "COMPETITION",
+          "words": [
+            "BATTLE",
+            "CLASH",
+            "CONTEST",
+            "MATCH"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "ON BOARD",
+          "words": [
+            "DOWN",
+            "GAME",
+            "IN",
+            "WILLING"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "WORDS FOR UNSPECIFIED CHOICES",
+          "words": [
+            "ANOTHER",
+            "EITHER",
+            "NEITHER",
+            "ONE"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "___LIFE",
+          "words": [
+            "AFTER",
+            "LOW",
+            "NIGHT",
+            "WILD"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1032,
+      "date": "April 8, 2026",
+      "categories": [
+        {
+          "name": "COHORT MEMBER",
+          "words": [
+            "ASSOCIATE",
+            "COLLEAGUE",
+            "FELLOW",
+            "PEER"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "AESTHETIC",
+          "words": [
+            "DESIGN",
+            "LOOK",
+            "SCHEME",
+            "STYLE"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "KINDS OF BAR APPARATUSES",
+          "words": [
+            "MONKEY",
+            "PARALLEL",
+            "PULL-UP",
+            "UNEVEN"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "EYEWEAR IN THE SINGULAR",
+          "words": [
+            "CONTACT",
+            "GOGGLE",
+            "SHADE",
+            "SPECTACLE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1033,
+      "date": "April 9, 2026",
+      "categories": [
+        {
+          "name": "GLOOMY",
+          "words": [
+            "BLUE",
+            "DARK",
+            "DOWN",
+            "LOW"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "OINTMENT",
+          "words": [
+            "BALM",
+            "CREAM",
+            "PASTE",
+            "RUB"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "ZODIAC SYMBOLS",
+          "words": [
+            "ARCHER",
+            "FISH",
+            "GOAT",
+            "RAM"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "MUSCULAR, MINUS \"ED\" SOUND",
+          "words": [
+            "JACK",
+            "RIP",
+            "SHRED",
+            "YOKE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1034,
+      "date": "April 10, 2026",
+      "categories": [
+        {
+          "name": "PEPPERS",
+          "words": [
+            "BELL PEPPER",
+            "CAROLINA REAPER",
+            "CHIPOTLE",
+            "PEPPERONCINO"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "THINGS THAT POP UP",
+          "words": [
+            "EJECTOR SEAT",
+            "JACK-IN-THE-BOX",
+            "POP-UP BOOK",
+            "TOASTER"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "DESCRIPTORS FOR SWISS CHEESE",
+          "words": [
+            "FIRM",
+            "HOLEY",
+            "NUTTY",
+            "SWISS"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "BLUE CHARACTERS",
+          "words": [
+            "BLUE",
+            "GENIE",
+            "GONZO",
+            "SONIC"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
+    {
+      "id": 1035,
+      "date": "April 11, 2026",
+      "categories": [
+        {
+          "name": "FOUND IN THE TRUNK OF A CAR",
+          "words": [
+            "ICE SCRAPER",
+            "JACK",
+            "JUMPER CABLES",
+            "SPARE TIRE"
+          ],
+          "difficulty": 1,
+          "color": "#F9DF6D"
+        },
+        {
+          "name": "BENEFACTOR",
+          "words": [
+            "ANGEL",
+            "CHAMPION",
+            "PATRON",
+            "SPONSOR"
+          ],
+          "difficulty": 5,
+          "color": "#A0C35A"
+        },
+        {
+          "name": "STRUCTURAL SUPPORTS",
+          "words": [
+            "BEAM",
+            "BRACE",
+            "COLUMN",
+            "STRUT"
+          ],
+          "difficulty": 9,
+          "color": "#B0C4EF"
+        },
+        {
+          "name": "ENDING IN BODIES OF WATER",
+          "words": [
+            "BOMBAY",
+            "CHELSEA",
+            "SCREWDRIVER",
+            "SNOWFLAKE"
+          ],
+          "difficulty": 13,
+          "color": "#BA81C5"
+        }
+      ]
+    },
     {
       "id": 1018,
       "date": "March 25, 2026",
