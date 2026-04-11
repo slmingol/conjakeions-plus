@@ -58,34 +58,19 @@ function App() {
   const [puzzleAttemptRecorded, setPuzzleAttemptRecorded] = useState(false);
   const [proximityHighlight, setProximityHighlight] = useState([]);
   
-  // Show loading state while puzzles are being fetched
-  if (isLoadingPuzzles || puzzlesData.length === 0) {
-    return (
-      <div className="App">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          height: '100vh',
-          fontSize: '1.5rem',
-          color: '#666'
-        }}>
-          {isLoadingPuzzles ? 'Loading puzzles...' : 'No puzzles available'}
-        </div>
-      </div>
-    );
-  }
-  
-  const currentPuzzle = puzzlesData[currentPuzzleIndex];
-  const PUZZLE_DATA = currentPuzzle.categories.map(cat => ({
+  // Get current puzzle data (safe to access even when loading)
+  const currentPuzzle = puzzlesData.length > 0 ? puzzlesData[currentPuzzleIndex] : null;
+  const PUZZLE_DATA = currentPuzzle ? currentPuzzle.categories.map(cat => ({
     category: cat.name,
     words: cat.words,
     difficulty: cat.difficulty,
     color: cat.color
-  }));
+  })) : [];
 
   // Initialize and shuffle words when puzzle changes
   useEffect(() => {
+    if (!currentPuzzle) return; // Skip if no puzzle loaded yet
+    
     const allWords = PUZZLE_DATA.flatMap(cat => 
       cat.words.map(word => ({
         text: word,
@@ -380,6 +365,20 @@ function App() {
 
   return (
     <div className="App">
+      {/* Show loading state while puzzles are being fetched */}
+      {(isLoadingPuzzles || puzzlesData.length === 0) ? (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          fontSize: '1.5rem',
+          color: '#666'
+        }}>
+          {isLoadingPuzzles ? 'Loading puzzles...' : 'No puzzles available'}
+        </div>
+      ) : (
+        <>
       {newVersionAvailable && (
         <div className="update-banner">
           <span>A new version is available! </span>
@@ -718,6 +717,8 @@ function App() {
             </div>
           </div>
         </div>
+      )}
+      </>
       )}
     </div>
   );
