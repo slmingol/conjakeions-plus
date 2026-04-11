@@ -13,9 +13,10 @@ const __dirname = path.dirname(__filename);
 
 // Determine paths
 const isContainer = fs.existsSync('/usr/share/nginx/html/');
-const dataDir = isContainer ? '/usr/share/nginx/html' : path.join(__dirname, '../data');
+const collectedDataPath = path.join(__dirname, '../data/collected-puzzles.json');
 const srcDir = path.join(__dirname, '../src');
 const publicDir = path.join(__dirname, '../public');
+const nginxPublicDir = '/usr/share/nginx/html';
 
 function loadJSON(filePath) {
     if (!fs.existsSync(filePath)) {
@@ -43,8 +44,7 @@ function main() {
     console.log(`Loaded ${staticPuzzles.length} static puzzles`);
     
     // Load collected puzzles (from scraping)
-    const collectedPath = path.join(dataDir, 'collected-puzzles.json');
-    const collectedData = loadJSON(collectedPath);
+    const collectedData = loadJSON(collectedDataPath);
     const collectedPuzzles = collectedData?.puzzles || [];
     console.log(`Loaded ${collectedPuzzles.length} collected puzzles`);
     
@@ -67,10 +67,17 @@ function main() {
         fs.writeFileSync(staticPath, JSON.stringify(combined, null, 2));
         console.log(`✓ Updated ${staticPath}`);
         
-        // Update public/puzzles.json (for direct serving)
+        // Update public/puzzles.json (for direct serving - dev environment)
         const publicPath = path.join(publicDir, 'puzzles.json');
         fs.writeFileSync(publicPath, JSON.stringify(combined, null, 2));
         console.log(`✓ Updated ${publicPath}`);
+        
+        // In container, also update nginx served puzzles.json
+        if (isContainer && fs.existsSync(nginxPublicDir)) {
+            const nginxPuzzlesPath = path.join(nginxPublicDir, 'puzzles.json');
+            fs.writeFileSync(nginxPuzzlesPath, JSON.stringify(combined, null, 2));
+            console.log(`✓ Updated ${nginxPuzzlesPath} (nginx)`);
+        }
         
         console.log(`Total puzzles: ${combined.length}`);
     } else {

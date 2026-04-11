@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import puzzlesData from './puzzles.json';
 import packageJson from '../package.json';
 import { useVersionCheck } from './useVersionCheck';
 import { useStats } from './useStats';
@@ -13,6 +12,25 @@ import StatsModal from './StatsModal';
 const MAX_MISTAKES = 4;
 
 function App() {
+  const [puzzlesData, setPuzzlesData] = useState([]);
+  const [isLoadingPuzzles, setIsLoadingPuzzles] = useState(true);
+  
+  // Fetch puzzles dynamically at runtime to pick up scheduler updates
+  useEffect(() => {
+    fetch('/puzzles.json')
+      .then(res => res.json())
+      .then(data => {
+        setPuzzlesData(data);
+        setIsLoadingPuzzles(false);
+      })
+      .catch(err => {
+        console.error('Failed to load puzzles:', err);
+        // Fallback to empty array
+        setPuzzlesData([]);
+        setIsLoadingPuzzles(false);
+      });
+  }, []);
+  
   const { newVersionAvailable, reload } = useVersionCheck();
   const { stats, recordWin, recordLoss, recordReveal, resetStats, getWinRate, getAverageMistakes } = useStats();
   const { savedState, saveState, clearState } = useGameState();
@@ -340,6 +358,24 @@ function App() {
     clearState();
     const dailyIndex = returnToDaily();
     setCurrentPuzzleIndex(dailyIndex);
+  }
+
+  // Show loading state while puzzles are being fetched
+  if (isLoadingPuzzles || puzzlesData.length === 0) {
+    return (
+      <div className="App">
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '100vh',
+          fontSize: '1.5rem',
+          color: '#666'
+        }}>
+          {isLoadingPuzzles ? 'Loading puzzles...' : 'No puzzles available'}
+        </div>
+      </div>
+    );
   }
 
   return (
