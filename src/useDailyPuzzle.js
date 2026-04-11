@@ -80,7 +80,7 @@ export const useDailyPuzzle = (puzzles) => {
     }, msUntilMidnight);
     
     return () => clearTimeout(timer);
-  }, [puzzles]);
+  }, [puzzles.length]);
 
   const returnToDaily = () => {
     setDailyPuzzleIndex(getDailyPuzzleIndex(puzzles));
