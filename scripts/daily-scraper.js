@@ -94,9 +94,9 @@ async function getTodaysPuzzle(daysAgo = 0) {
                 return null;
             }
             
-            // Calculate today's expected puzzle number and subtract days
-            const todaysPuzzleNum = maxPuzzleId + 1;
-            targetPuzzleNum = todaysPuzzleNum - daysAgo;
+            // maxPuzzleId represents the most recent puzzle we know about (typically today's)
+            // To go back N days, simply subtract N from the max ID
+            targetPuzzleNum = maxPuzzleId - daysAgo;
             
             console.log(`Calculated puzzle # for ${daysAgo} days ago: #${targetPuzzleNum} (max known: #${maxPuzzleId})`);
             
