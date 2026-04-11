@@ -41,8 +41,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install --production
 
+# Install Playwright browsers
+RUN npx playwright install chromium --with-deps
+
 # Copy scripts for puzzle scraping
 COPY scripts ./scripts
+
+# Copy src directory for merge script to access puzzles.json
+COPY src ./src
 
 # Create data directory for collected puzzles
 RUN mkdir -p /app/data
