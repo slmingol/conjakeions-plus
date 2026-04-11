@@ -18,6 +18,11 @@ const normalizeDate = (dateStr) => {
  * Returns the puzzle that matches today's date, or the most recent puzzle if none match
  */
 export const getDailyPuzzleIndex = (puzzles) => {
+  // Handle empty puzzles array
+  if (!puzzles || puzzles.length === 0) {
+    return 0;
+  }
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -51,6 +56,13 @@ export const useDailyPuzzle = (puzzles) => {
     getDailyPuzzleIndex(puzzles)
   );
   const [isPlayingDaily, setIsPlayingDaily] = useState(true);
+
+  // Update daily puzzle index when puzzles are loaded
+  useEffect(() => {
+    if (puzzles && puzzles.length > 0) {
+      setDailyPuzzleIndex(getDailyPuzzleIndex(puzzles));
+    }
+  }, [puzzles.length]);
 
   // Update daily puzzle at midnight
   useEffect(() => {
