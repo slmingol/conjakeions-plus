@@ -39,10 +39,8 @@ WORKDIR /app
 
 # Copy package files and install production dependencies
 COPY package*.json ./
-RUN npm install --production
-
-# Install Playwright browsers
-RUN npx playwright install chromium --with-deps
+RUN npm install --production && \
+    node node_modules/playwright/cli.js install chromium --with-deps
 
 # Copy scripts for puzzle scraping
 COPY scripts ./scripts
