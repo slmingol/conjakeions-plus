@@ -11,11 +11,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Determine paths
+// Determine paths - collection always in /app/data (persisted), merged output to nginx html
 const isContainer = fs.existsSync('/usr/share/nginx/html/');
-const collectedDataPath = isContainer 
-    ? '/usr/share/nginx/html/collected-puzzles.json'
-    : path.join(__dirname, '../data/collected-puzzles.json');
+const collectedDataPath = path.join(__dirname, '../data/collected-puzzles.json');
 const srcDir = path.join(__dirname, '../src');
 const publicDir = path.join(__dirname, '../public');
 const nginxPublicDir = '/usr/share/nginx/html';

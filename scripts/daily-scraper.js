@@ -64,11 +64,8 @@ async function getTodaysPuzzle(daysAgo = 0) {
             await page.goto(url, { waitUntil: 'load', timeout: 60000 });
             await page.waitForTimeout(3000);
         } else {
-            // Calculate target puzzle number from collection
-            const isContainer = fs.existsSync('/usr/share/nginx/html/');
-            const collectionPath = isContainer 
-                ? '/usr/share/nginx/html/collected-puzzles.json'
-                : path.join(__dirname, '../data/collected-puzzles.json');
+            // Calculate target puzzle number from collection - always in /app/data
+            const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
             
             // Check if collection exists
             if (!fs.existsSync(collectionPath)) {
@@ -617,11 +614,8 @@ function createPuzzleEntry(puzzleId, date, categories) {
  */
 function addToCollection(puzzleData) {
     try {
-        // Determine paths
-        const isContainer = fs.existsSync('/usr/share/nginx/html/');
-        const collectionPath = isContainer 
-            ? '/usr/share/nginx/html/collected-puzzles.json'
-            : path.join(__dirname, '../data/collected-puzzles.json');
+        // Determine paths - always use /app/data which is persisted via volume
+        const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
         
         console.log(`Using collection path: ${collectionPath}`);
         
