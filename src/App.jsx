@@ -112,11 +112,12 @@ function App() {
 
   // Record puzzle attempt when user starts playing
   useEffect(() => {
+    if (!currentPuzzle) return; // Skip if puzzle not loaded
     if (!puzzleAttemptRecorded && solved.length === 0 && mistakes === 0) {
       recordAttempt(currentPuzzle.id);
       setPuzzleAttemptRecorded(true);
     }
-  }, [currentPuzzle.id, puzzleAttemptRecorded, solved.length, mistakes]);
+  }, [currentPuzzle, puzzleAttemptRecorded, solved.length, mistakes]);
 
   // Save game state whenever it changes
   useEffect(() => {
@@ -125,6 +126,7 @@ function App() {
 
   // Check if game is won
   useEffect(() => {
+    if (!currentPuzzle) return; // Skip if puzzle not loaded
     const actuallySolved = solved.filter(cat => !cat.revealed).length;
     if (actuallySolved === PUZZLE_DATA.length && !statsRecorded) {
       setGameOver(true);
@@ -134,10 +136,11 @@ function App() {
       setStatsRecorded(true);
       clearState(); // Clear saved state on win
     }
-  }, [solved, statsRecorded]);
+  }, [solved, statsRecorded, currentPuzzle]);
 
   // Check if game is lost
   useEffect(() => {
+    if (!currentPuzzle) return; // Skip if puzzle not loaded
     if (mistakes >= MAX_MISTAKES && !revealed && !statsRecorded) {
       setGameOver(true);
       setMessage('Game Over! Better luck next time.');
@@ -151,7 +154,7 @@ function App() {
       );
       setSolved([...solved, ...unsolvedCategories.map(cat => ({ ...cat, revealed: true }))]);
     }
-  }, [mistakes, statsRecorded]);
+  }, [mistakes, statsRecorded, currentPuzzle]);
 
   // Close stats modal on Escape key
   useEffect(() => {
