@@ -67,12 +67,14 @@ function main() {
         fs.writeFileSync(staticPath, JSON.stringify(combined, null, 2));
         console.log(`✓ Updated ${staticPath}`);
         
-        // Update public/puzzles.json (for direct serving - dev environment)
-        const publicPath = path.join(publicDir, 'puzzles.json');
-        fs.writeFileSync(publicPath, JSON.stringify(combined, null, 2));
-        console.log(`✓ Updated ${publicPath}`);
+        // Update public/puzzles.json (for direct serving - dev environment only)
+        if (fs.existsSync(publicDir)) {
+            const publicPath = path.join(publicDir, 'puzzles.json');
+            fs.writeFileSync(publicPath, JSON.stringify(combined, null, 2));
+            console.log(`✓ Updated ${publicPath}`);
+        }
         
-        // In container, also update nginx served puzzles.json
+        // In container, update nginx served puzzles.json
         if (isContainer && fs.existsSync(nginxPublicDir)) {
             const nginxPuzzlesPath = path.join(nginxPublicDir, 'puzzles.json');
             fs.writeFileSync(nginxPuzzlesPath, JSON.stringify(combined, null, 2));
