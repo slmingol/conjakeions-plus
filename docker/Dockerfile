@@ -35,12 +35,15 @@ RUN apk add --no-cache \
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
+# Tell Playwright to use installed chromium
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 WORKDIR /app
 
 # Copy package files and install production dependencies
 COPY package*.json ./
-RUN npm install --production && \
-    node node_modules/playwright/cli.js install chromium --with-deps
+RUN npm install --production
 
 # Copy scripts for puzzle scraping
 COPY scripts ./scripts
