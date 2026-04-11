@@ -64,28 +64,41 @@ async function getTodaysPuzzle(daysAgo = 0) {
             await page.goto(url, { waitUntil: 'load', timeout: 60000 });
             await page.waitForTimeout(3000);
         } else {
-            // Calculate target puzzle number from collection - always in /app/data
+            // Calculate target puzzle number - use src/puzzles.json which has the main dataset
+            const srcPuzzlesPath = path.join(__dirname, '../src/puzzles.json');
             const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
             
-            // Check if collection exists
-            if (!fs.existsSync(collectionPath)) {
-                console.log('⚠️  Collection file not found. Cannot calculate puzzle number for past dates.');
-                console.log(`   Looking for: ${collectionPath}`);
-                console.log('   Fetch today\'s puzzle first (daysAgo=0) to initialize the collection.');
+            let maxPuzzleId = 0;
+            
+            // First, try to get max ID from src/puzzles.json (has 1000+ puzzles)
+            if (fs.existsSync(srcPuzzlesPath)) {
+                const srcPuzzles = JSON.parse(fs.readFileSync(srcPuzzlesPath, 'utf8'));
+                const srcIds = srcPuzzles.map(p => p.id).filter(id => id != null);
+                if (srcIds.length > 0) {
+                    maxPuzzleId = Math.max(...srcIds);
+                }
+            }
+            
+            // Also check collected puzzles for any newer ones
+            if (fs.existsSync(collectionPath)) {
+                const collectionData = JSON.parse(fs.readFileSync(collectionPath, 'utf8'));
+                const collectedIds = collectionData.puzzles.map(p => p.id).filter(id => id != null);
+                if (collectedIds.length > 0) {
+                    maxPuzzleId = Math.max(maxPuzzleId, ...collectedIds);
+                }
+            }
+            
+            if (maxPuzzleId === 0) {
+                console.log('⚠️  No puzzles found to calculate puzzle number from.');
+                console.log('   Fetch today\'s puzzle first (daysAgo=0) to initialize.');
                 return null;
             }
             
-            const collectionData = JSON.parse(fs.readFileSync(collectionPath, 'utf8'));
-            const puzzleIds = collectionData.puzzles.map(p => p.id).sort((a, b) => a - b);
+            // Calculate today's expected puzzle number and subtract days
+            const todaysPuzzleNum = maxPuzzleId + 1;
+            targetPuzzleNum = todaysPuzzleNum - daysAgo;
             
-            if (puzzleIds.length === 0) {
-                console.log('⚠️  Collection is empty. Cannot calculate puzzle number for past dates.');
-                console.log('   Fetch today\'s puzzle first (daysAgo=0) to initialize the collection.');
-                return null;
-            }
-            
-            const referenceId = puzzleIds[puzzleIds.length - 1] + 1; // max + 1
-            targetPuzzleNum = referenceId - daysAgo;
+            console.log(`Calculated puzzle # for ${daysAgo} days ago: #${targetPuzzleNum} (max known: #${maxPuzzleId})`);
             
             // Go directly to the puzzle URL
             url = `https://connectionsplus.io/game/${targetPuzzleNum}`;
