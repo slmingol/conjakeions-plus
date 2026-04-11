@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 /**
  * Normalize date to YYYY-MM-DD format for comparison
@@ -51,29 +51,23 @@ export const getDailyPuzzleIndex = (puzzles) => {
 
 /**
  * Hook to manage daily puzzle state
- * Note: puzzles should be a stable reference (from useState) to avoid infinite re-renders
+ * Avoids infinite re-renders by tracking initialization with a ref
  */
 export const useDailyPuzzle = (puzzles) => {
-  const [dailyPuzzleIndex, setDailyPuzzleIndex] = useState(() => 
-    getDailyPuzzleIndex(puzzles)
-  );
+  const [dailyPuzzleIndex, setDailyPuzzleIndex] = useState(0);
   const [isPlayingDaily, setIsPlayingDaily] = useState(true);
+  const initializedRef = useRef(false);
 
-  // Update daily puzzle index when puzzles are loaded
-  // This only runs once when puzzles.length changes from 0 to populated
+  // Update daily puzzle index when puzzles are loaded (one-time initialization)
   useEffect(() => {
-    if (puzzles && puzzles.length > 0) {
+    if (puzzles && puzzles.length > 0 && !initializedRef.current) {
       const newIndex = getDailyPuzzleIndex(puzzles);
       setDailyPuzzleIndex(newIndex);
+      initializedRef.current = true;
     }
-    // NOTE: Only using puzzles.length to avoid infinite loop
-    // puzzles comes from App state and should be stable after initial fetch
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puzzles.length]);
+  }, [puzzles]);
 
-  // Set up midnight reload timer
-  // Runs when puzzles load (length changes from 0 to populated)
-  // Timer just reloads the page, doesn't access puzzles, so safe to use length-only dep
+  // Set up midnight reload timer (one-time setup after puzzles load)
   useEffect(() => {
     if (!puzzles || puzzles.length === 0) return;
     
@@ -90,9 +84,7 @@ export const useDailyPuzzle = (puzzles) => {
     }, msUntilMidnight);
     
     return () => clearTimeout(timer);
-    // Only puzzles.length: we don't access puzzles content in timer, just reload
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [puzzles.length]);
+  }, [puzzles]);
 
   const returnToDaily = () => {
     setDailyPuzzleIndex(getDailyPuzzleIndex(puzzles));
