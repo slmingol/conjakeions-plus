@@ -1,0 +1,81 @@
+name: Daily Puzzle Fetch
+
+on:
+  schedule:
+    # Run at 3 AM, 9 AM, 3 PM, and 9 PM UTC (multiple times per day to catch new puzzles)
+    - cron: '0 3,9,15,21 * * *'
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  fetch-puzzles:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run auto-backfill to fetch missing puzzles
+        run: npm run auto-backfill
+        continue-on-error: true
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          if git diff --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No new puzzles found"
+          else
+            echo "changes=true" >> $GITHUB_OUTPUT
+            PUZZLE_COUNT=$(jq 'length' src/puzzles.json)
+            echo "puzzle_count=$PUZZLE_COUNT" >> $GITHUB_OUTPUT
+            echo "Found new puzzles! Total: $PUZZLE_COUNT"
+          fi
+
+      - name: Configure Git
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and push new puzzles
+        if: steps.check_changes.outputs.changes == 'true'
+        run: |
+          git add data/collected-puzzles.json public/puzzles.json src/puzzles.json
+          LATEST_DATE=$(jq -r '.[-1].date' src/puzzles.json)
+          LATEST_ID=$(jq -r '.[-1].id // "unknown"' src/puzzles.json)
+          git commit -m "Auto-fetch daily puzzles
+
+- Latest puzzle: #${LATEST_ID} (${LATEST_DATE})
+- Total puzzles: ${{ steps.check_changes.outputs.puzzle_count }}
+- Fetched by automated workflow
+
+[skip ci]"
+          git push
+
+      - name: Create summary
+        if: always()
+        run: |
+          echo "## Daily Puzzle Fetch Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.check_changes.outputs.changes }}" == "true" ]; then
+            echo "✅ **New puzzles fetched and committed**" >> $GITHUB_STEP_SUMMARY
+            echo "- Total puzzles: ${{ steps.check_changes.outputs.puzzle_count }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "ℹ️ **No new puzzles found**" >> $GITHUB_STEP_SUMMARY
+            echo "All puzzles are up to date." >> $GITHUB_STEP_SUMMARY
+          fi
