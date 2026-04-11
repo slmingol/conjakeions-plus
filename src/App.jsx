@@ -108,7 +108,7 @@ function App() {
       setPuzzleAttemptRecorded(false);
       setProximityHighlight([]);
     }
-  }, [currentPuzzleIndex]);
+  }, [currentPuzzleIndex, currentPuzzle]);
 
   // Record puzzle attempt when user starts playing
   useEffect(() => {
