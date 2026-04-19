@@ -49,12 +49,25 @@ function normalizeDate(dateStr) {
 function getMissingDates() {
     console.log(`\n[Auto-Backfill] Checking for missing puzzles from last ${DAYS_TO_CHECK} days...`);
     
-   // Load existing puzzles
+    // Load existing puzzles from src/puzzles.json (build-time static set)
     let existingPuzzles = [];
     if (fs.existsSync(srcPath)) {
         existingPuzzles = JSON.parse(fs.readFileSync(srcPath, 'utf8'));
     }
-    
+
+    // Also load persisted collected puzzles (survive container restarts via Docker volume)
+    if (fs.existsSync(dataPath)) {
+        try {
+            const collectedData = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+            const collectedPuzzles = collectedData?.puzzles || [];
+            if (collectedPuzzles.length > 0) {
+                existingPuzzles = [...existingPuzzles, ...collectedPuzzles];
+            }
+        } catch (err) {
+            console.log(`  ⚠️  Could not read collected puzzles: ${err.message}`);
+        }
+    }
+
     // Build set of existing dates (normalized to ISO format)
     const existingDates = new Set(
         existingPuzzles
@@ -136,7 +149,15 @@ async function main() {
     console.log('╔════════════════════════════════════════════════════════╗');
     console.log('║  Conjakeions+ Auto-Backfill                            ║');
     console.log('╚════════════════════════════════════════════════════════╝');
-    
+
+    // If persisted collected puzzles exist, merge them into nginx first.
+    // This restores the served puzzles.json after a container restart without
+    // needing to re-scrape puzzles that are already in the volume.
+    if (fs.existsSync(dataPath)) {
+        console.log('\n[Auto-Backfill] Persisted collected puzzles found. Merging into nginx...');
+        await mergePuzzles();
+    }
+
     const missingDays = getMissingDates();
     
     if (missingDays.length === 0) {
