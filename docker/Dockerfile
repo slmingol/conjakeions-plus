@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS build
+FROM node:18-slim AS build
 
 WORKDIR /app
 
@@ -19,31 +19,23 @@ RUN npm run build
 RUN node -p "require('./package.json').version" > /app/dist/version.txt
 
 # Production stage
-FROM node:18-alpine
+FROM node:18-slim
 
-# Install nginx and dependencies for puppeteer
-RUN apk add --no-cache \
+# Install nginx and dependencies for Playwright
+RUN apt-get update && apt-get install -y \
     nginx \
-    chromium \
-    nss \
-    freetype \
-    harfbuzz \
-    ca-certificates \
-    ttf-freefont
-
-# Tell Puppeteer to use installed chromium
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-
-# Tell Playwright to use installed chromium
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
-ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Copy package files and install production dependencies
 COPY package*.json ./
 RUN npm install --production
+
+# Install Playwright browsers (chromium only)
+RUN npx playwright install --with-deps chromium
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/root/.cache/ms-playwright
 
 # Copy scripts for puzzle scraping
 COPY scripts ./scripts

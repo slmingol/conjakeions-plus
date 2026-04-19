@@ -15,16 +15,20 @@ const __dirname = path.dirname(__filename);
 // Configuration
 const CHECK_TIMES = [2, 8, 14, 20]; // Check at 2am, 8am, 2pm, 8pm
 const CHECK_INTERVAL = 15 * 60 * 1000; // Check every 15 minutes
+const WEEKLY_DEEP_SCAN_DAY = 0; // Sunday = 0, Monday = 1, etc.
+const WEEKLY_DEEP_SCAN_HOUR = 3; // 3am on Sunday
 const STATE_FILE = path.join(__dirname, '../data/scheduler-state.json');
 
 // State tracking
 let state = {
     lastRun: null,
     lastCheckDate: null,
+    lastDeepScan: null,
     checksToday: 0,
     consecutiveErrors: 0,
     totalRuns: 0,
-    totalErrors: 0
+    totalErrors: 0,
+    deepScans: 0
 };
 
 // Load state
@@ -58,6 +62,7 @@ function shouldRun() {
     const now = new Date();
     const currentHour = now.getHours();
     const currentDate = now.toISOString().split('T')[0];
+    const currentDay = now.getDay();
     
     // Reset daily counter if it's a new day
     if (state.lastCheckDate !== currentDate) {
@@ -65,22 +70,35 @@ function shouldRun() {
         state.lastCheckDate = currentDate;
     }
     
-    // Check if we're in a check time window
+    // Check for weekly deep scan (Sunday at 3am)
+    if (currentDay === WEEKLY_DEEP_SCAN_DAY && currentHour === WEEKLY_DEEP_SCAN_HOUR) {
+        const lastDeepScanDate = state.lastDeepScan ? new Date(state.lastDeepScan).toISOString().split('T')[0] : null;
+        if (lastDeepScanDate !== currentDate) {
+            return { type: 'deep', days: 90 }; // Check last 90 days
+        }
+    }
+    
+    // Check if we're in a regular check time window
     const isCheckTime = CHECK_TIMES.some(hour => 
         currentHour === hour && (!state.lastRun || 
         new Date(state.lastRun).getHours() !== hour)
     );
     
-    return isCheckTime;
+    if (isCheckTime) {
+        return { type: 'regular', days: 7 }; // Regular 7-day check
+    }
+    
+    return null;
 }
 
-// Run the auto-backfill to ensure last 7 days are complete
-async function runScraper() {
+// Run the auto-backfill to ensure last N days are complete
+async function runScraper(type, days) {
     return new Promise((resolve) => {
-        console.log(`[${new Date().toISOString()}] Running scheduled auto-backfill...`);
+        const scanType = type === 'deep' ? 'DEEP SCAN' : 'regular check';
+        console.log(`[${new Date().toISOString()}] Running scheduled auto-backfill (${scanType}, ${days} days)...`);
         
         const backfillPath = path.join(__dirname, 'auto-backfill.js');
-        const backfill = spawn('node', [backfillPath], {
+        const backfill = spawn('node', [backfillPath, days.toString()], {
             stdio: 'inherit',
             cwd: path.join(__dirname, '..')
         });
@@ -88,9 +106,13 @@ async function runScraper() {
         backfill.on('close', (code) => {
             if (code === 0) {
                 state.consecutiveErrors = 0;
-                console.log('[Scheduler] Auto-backfill completed successfully');
+                console.log(`[Scheduler] Auto-backfill ${scanType} completed successfully`);
+                if (type === 'deep') {
+                    state.lastDeepScan = new Date().toISOString();
+                    state.deepScans++;
+                }
             } else {
-                console.error(`[Scheduler] Auto-backfill failed with exit code ${code}`);
+                console.error(`[Scheduler] Auto-backfill ${scanType} failed with exit code ${code}`);
                 state.consecutiveErrors++;
                 state.totalErrors++;
             }
@@ -118,19 +140,22 @@ async function runScraper() {
 // Main scheduler loop
 async function start() {
     console.log('[Scheduler] Starting...');
-    console.log(`[Scheduler] Will check at hours: ${CHECK_TIMES.join(', ')}`);
+    console.log(`[Scheduler] Daily checks at hours: ${CHECK_TIMES.join(', ')}`);
+    console.log(`[Scheduler] Weekly deep scan: ${['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][WEEKLY_DEEP_SCAN_DAY]} at ${WEEKLY_DEEP_SCAN_HOUR}:00`);
     
     loadState();
     
     // Check immediately on startup
-    if (shouldRun()) {
-        await runScraper();
+    const shouldRunNow = shouldRun();
+    if (shouldRunNow) {
+        await runScraper(shouldRunNow.type, shouldRunNow.days);
     }
     
     // Then check periodically
     setInterval(async () => {
-        if (shouldRun()) {
-            await runScraper();
+        const check = shouldRun();
+        if (check) {
+            await runScraper(check.type, check.days);
         }
     }, CHECK_INTERVAL);
     

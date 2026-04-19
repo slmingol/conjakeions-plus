@@ -1,7 +1,13 @@
 #!/usr/bin/env node
 /**
- * Auto-backfill script - Automatically checks and fills missing puzzles from last 7 days
- * Runs on app startup or periodically to ensure complete puzzle collection
+ * Auto-backfill script - Automatically checks and fills missing puzzles
+ * Usage: node auto-backfill.js [days]
+ * 
+ * Examples:
+ *   node auto-backfill.js       # Check last 7 days (default)
+ *   node auto-backfill.js 30    # Check last 30 days
+ *   node auto-backfill.js 365   # Check last year
+ *   node auto-backfill.js all   # Check entire collection
  */
 
 import fs from 'fs';
@@ -12,7 +18,18 @@ import { spawn } from 'child_process';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DAYS_TO_CHECK = 7;
+// Get days from command line argument or use default
+const daysArg = process.argv[2];
+let DAYS_TO_CHECK;
+
+if (daysArg === 'all') {
+    DAYS_TO_CHECK = 1095; // ~3 years, covers the entire puzzle history
+} else if (daysArg && !isNaN(parseInt(daysArg))) {
+    DAYS_TO_CHECK = parseInt(daysArg);
+} else {
+    DAYS_TO_CHECK = 7; // Default: last 7 days
+}
+
 const dataPath = path.join(__dirname, '../data/collected-puzzles.json');
 const srcPath = path.join(__dirname, '../src/puzzles.json');
 
