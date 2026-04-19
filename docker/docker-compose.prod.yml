@@ -7,6 +7,12 @@ services:
     restart: unless-stopped
     networks:
       - conjakeions-network
+    volumes:
+      - puzzle-data:/app/data
+
+volumes:
+  puzzle-data:
+    driver: local
 
 networks:
   conjakeions-network:
