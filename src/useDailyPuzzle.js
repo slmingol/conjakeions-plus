@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 
 /**
- * Normalize date to YYYY-MM-DD format for comparison
+ * Normalize date to YYYY-MM-DD format for comparison (uses local timezone)
  * Note: Fixed infinite loop in useEffect (v2.16.36) - use [puzzles.length] not [puzzles]
  */
 const normalizeDate = (dateStr) => {
   try {
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return dateStr;
-    return date.toISOString().split('T')[0];
+    // Use local timezone, not UTC, to match user's current day
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   } catch {
     return dateStr;
   }
@@ -26,7 +30,11 @@ export const getDailyPuzzleIndex = (puzzles) => {
   
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+  // Use local timezone format for comparison
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
   
   // Try to find exact date match (normalize puzzle dates for comparison)
   const exactMatch = puzzles.findIndex(p => normalizeDate(p.date) === todayStr);
