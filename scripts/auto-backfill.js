@@ -61,6 +61,21 @@ function normalizeDate(dateStr) {
 }
 
 /**
+ * Get the maximum puzzle ID from existing puzzles
+ */
+function getMaxPuzzleId(puzzles) {
+    const puzzleIds = puzzles
+        .map(p => p.id)
+        .filter(id => id != null && !isNaN(id));
+    
+    if (puzzleIds.length === 0) {
+        return 0;
+    }
+    
+    return Math.max(...puzzleIds);
+}
+
+/**
  * Check which puzzles from the last N days are missing
  */
 function getMissingDates() {
@@ -85,6 +100,10 @@ function getMissingDates() {
         }
     }
 
+    // Calculate the maximum puzzle ID to determine earliest valid puzzle
+    const maxPuzzleId = getMaxPuzzleId(existingPuzzles);
+    console.log(`  Max puzzle ID: #${maxPuzzleId}`);
+    
     // Build set of existing dates (normalized to ISO format)
     const existingDates = new Set(
         existingPuzzles
@@ -94,13 +113,22 @@ function getMissingDates() {
     
     console.log(`  Found ${existingDates.size} existing puzzles with valid dates`);
     
-    // Check last N days
+    // Check last N days, but only if puzzle number would be valid (> 0)
     const missingDays = [];
     for (let i = 0; i < DAYS_TO_CHECK; i++) {
+        // Calculate what the puzzle number would be for this day
+        const estimatedPuzzleNum = maxPuzzleId - i;
+        
+        // Skip if this would be before puzzle #1
+        if (estimatedPuzzleNum <= 0) {
+            console.log(`  ⏭️  Skipping: ${i} days ago (would be puzzle #${estimatedPuzzleNum}, before first puzzle)`);
+            continue;
+        }
+        
         const dateStr = getDateString(i);
         if (!existingDates.has(dateStr)) {
             missingDays.push(i);
-            console.log(`  ⚠️  Missing: ${dateStr} (${i} days ago)`);
+            console.log(`  ⚠️  Missing: ${dateStr} (${i} days ago, ~puzzle #${estimatedPuzzleNum})`);
         } else {
             console.log(`  ✓  Found: ${dateStr}`);
         }

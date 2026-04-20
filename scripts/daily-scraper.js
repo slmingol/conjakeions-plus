@@ -98,6 +98,14 @@ async function getTodaysPuzzle(daysAgo = 0) {
             // To go back N days, simply subtract N from the max ID
             targetPuzzleNum = maxPuzzleId - daysAgo;
             
+            // Safety check: don't try to fetch puzzles before #1
+            if (targetPuzzleNum <= 0) {
+                console.log(`⚠️  Cannot fetch puzzle from ${daysAgo} days ago`);
+                console.log(`   Calculated puzzle #${targetPuzzleNum} (max known: #${maxPuzzleId})`);
+                console.log(`   This would be before the first puzzle. Skipping.`);
+                return null;
+            }
+            
             console.log(`Calculated puzzle # for ${daysAgo} days ago: #${targetPuzzleNum} (max known: #${maxPuzzleId})`);
             
             // Go directly to the puzzle URL
