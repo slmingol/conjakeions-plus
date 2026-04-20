@@ -111,7 +111,15 @@ function getMissingDates() {
             .filter(d => d && d.includes('-')) // Only valid ISO dates
     );
     
+    // Build set of existing puzzle IDs
+    const existingIds = new Set(
+        existingPuzzles
+            .map(p => p.id)
+            .filter(id => id != null && !isNaN(id))
+    );
+    
     console.log(`  Found ${existingDates.size} existing puzzles with valid dates`);
+    console.log(`  Found ${existingIds.size} existing puzzles with IDs`);
     
     // Check last N days, but only if puzzle number would be valid (> 0)
     const missingDays = [];
@@ -125,13 +133,22 @@ function getMissingDates() {
             continue;
         }
         
-        const dateStr = getDateString(i);
-        if (!existingDates.has(dateStr)) {
-            missingDays.push(i);
-            console.log(`  ⚠️  Missing: ${dateStr} (${i} days ago, ~puzzle #${estimatedPuzzleNum})`);
-        } else {
-            console.log(`  ✓  Found: ${dateStr}`);
+        // Check if we already have this puzzle by ID (more reliable than date)
+        if (existingIds.has(estimatedPuzzleNum)) {
+            console.log(`  ✓  Found: puzzle #${estimatedPuzzleNum} (${i} days ago)`);
+            continue;
         }
+        
+        // Fallback: also check by date in case puzzle numbering is off
+        const dateStr = getDateString(i);
+        if (existingDates.has(dateStr)) {
+            console.log(`  ✓  Found: ${dateStr} (${i} days ago)`);
+            continue;
+        }
+        
+        // Missing - add to backfill list
+        missingDays.push(i);
+        console.log(`  ⚠️  Missing: puzzle #${estimatedPuzzleNum} / ${dateStr} (${i} days ago)`);
     }
     
     return missingDays;
