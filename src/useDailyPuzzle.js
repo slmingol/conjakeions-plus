@@ -35,14 +35,18 @@ export const getDailyPuzzleIndex = (puzzles) => {
   }
   
   // If no exact match, find the most recent puzzle (latest date <= today)
-  let latestIndex = 0;
-  let latestDate = new Date(puzzles[0].date);
+  // Start by assuming the last puzzle in the array is the most recent
+  let latestIndex = puzzles.length - 1;
+  let latestDate = new Date(normalizeDate(puzzles[latestIndex].date));
   
-  for (let i = 1; i < puzzles.length; i++) {
-    const puzzleDate = new Date(puzzles[i].date);
-    if (puzzleDate <= today && puzzleDate > latestDate) {
-      latestDate = puzzleDate;
-      latestIndex = i;
+  // If the last puzzle is in the future, search backwards for the most recent past/today puzzle
+  if (latestDate > today) {
+    for (let i = puzzles.length - 1; i >= 0; i--) {
+      const puzzleDate = new Date(normalizeDate(puzzles[i].date));
+      if (puzzleDate <= today) {
+        latestIndex = i;
+        break;
+      }
     }
   }
   
