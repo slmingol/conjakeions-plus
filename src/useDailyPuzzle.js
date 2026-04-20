@@ -19,6 +19,14 @@ const normalizeDate = (dateStr) => {
 };
 
 /**
+ * Parse YYYY-MM-DD string as local timezone date
+ */
+const parseLocalDate = (dateStr) => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day); // month is 0-indexed
+};
+
+/**
  * Find the daily puzzle index by matching today's date with puzzle dates
  * Returns the puzzle that matches today's date, or the most recent puzzle if none match
  */
@@ -45,12 +53,14 @@ export const getDailyPuzzleIndex = (puzzles) => {
   // If no exact match, find the most recent puzzle (latest date <= today)
   // Start by assuming the last puzzle in the array is the most recent
   let latestIndex = puzzles.length - 1;
-  let latestDate = new Date(normalizeDate(puzzles[latestIndex].date));
+  const latestDateStr = normalizeDate(puzzles[latestIndex].date);
+  const latestDate = parseLocalDate(latestDateStr);
   
   // If the last puzzle is in the future, search backwards for the most recent past/today puzzle
   if (latestDate > today) {
     for (let i = puzzles.length - 1; i >= 0; i--) {
-      const puzzleDate = new Date(normalizeDate(puzzles[i].date));
+      const puzzleDateStr = normalizeDate(puzzles[i].date);
+      const puzzleDate = parseLocalDate(puzzleDateStr);
       if (puzzleDate <= today) {
         latestIndex = i;
         break;
