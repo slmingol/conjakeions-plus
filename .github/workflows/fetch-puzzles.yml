@@ -1,0 +1,80 @@
+name: Fetch Daily Puzzles
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # Run daily at 9:00 AM UTC (after new puzzles are published)
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Number of days to backfill (default: 7)'
+        required: false
+        default: '7'
+
+jobs:
+  fetch-puzzles:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Ensure data directory exists
+        run: mkdir -p data
+
+      - name: Run auto-backfill
+        id: auto-backfill
+        run: node scripts/auto-backfill.js ${{ github.event.inputs.days || '7' }}
+        continue-on-error: true  # Don't fail the workflow if scraping partially fails
+
+      - name: Log auto-backfill result
+        run: |
+          if [ "${{ steps.auto-backfill.outcome }}" = "failure" ]; then
+            echo "⚠️  Auto-backfill encountered errors. Will still commit any partial results."
+          else
+            echo "✓ Auto-backfill completed successfully."
+          fi
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          CHANGES=$(git status --porcelain src/puzzles.json data/collected-puzzles.json 2>/dev/null)
+          if [ -n "$CHANGES" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+            echo "New puzzles found, will commit."
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+            echo "No new puzzles found."
+          fi
+
+      - name: Configure Git
+        if: steps.check-changes.outputs.changes == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Commit and push updated puzzles
+        if: steps.check-changes.outputs.changes == 'true'
+        run: |
+          git add src/puzzles.json
+          # Only add collected-puzzles.json if it exists (may not be created if only src/puzzles.json changed)
+          [ -f "data/collected-puzzles.json" ] && git add data/collected-puzzles.json || true
+          PUZZLE_COUNT=$(jq 'length' src/puzzles.json)
+          git commit -m "chore: update puzzles to latest (${PUZZLE_COUNT} total)"
+          git push origin main
