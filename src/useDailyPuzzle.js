@@ -75,9 +75,9 @@ export const getDailyPuzzleIndex = (puzzles) => {
  * Hook to manage daily puzzle state
  * Calculate daily index once when puzzles loads, never update during session
  */
-export const useDailyPuzzle = (puzzles) => {
+export const useDailyPuzzle = (puzzles, initialIsPlayingDaily = true) => {
   const [dailyPuzzleIndex, setDailyPuzzleIndex] = useState(0);
-  const [isPlayingDaily, setIsPlayingDaily] = useState(true);
+  const [isPlayingDaily, setIsPlayingDaily] = useState(initialIsPlayingDaily);
   const hasInitialized = useRef(false);
 
   // Calculate daily puzzle index ONCE when puzzles first loads
