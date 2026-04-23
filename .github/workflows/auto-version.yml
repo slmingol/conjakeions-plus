@@ -8,8 +8,6 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'public/version.json'
-      - 'src/puzzles.json'
-      - 'data/collected-puzzles.json'
 
 jobs:
   bump-version:
