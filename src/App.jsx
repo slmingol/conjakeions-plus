@@ -58,6 +58,19 @@ function App() {
   const [puzzleAttemptRecorded, setPuzzleAttemptRecorded] = useState(false);
   const [proximityHighlight, setProximityHighlight] = useState([]);
   
+  // Sync currentPuzzleIndex with dailyPuzzleIndex after puzzles load asynchronously.
+  // On mount, puzzlesData is empty so dailyPuzzleIndex starts at 0 (its initial useState value).
+  // Once puzzles load, useDailyPuzzle recalculates dailyPuzzleIndex to the correct day's index,
+  // but useState(initialPuzzleIndex) has already captured 0. This effect corrects that.
+  // savedState and isPlayingDaily are intentionally omitted from deps: dailyPuzzleIndex changes
+  // only once (0 → correct index after async load) so the closure values are current at that point.
+  useEffect(() => {
+    const hasSavedProgress = savedState.solved.length > 0 || savedState.mistakes > 0;
+    if (!hasSavedProgress && isPlayingDaily) {
+      setCurrentPuzzleIndex(dailyPuzzleIndex);
+    }
+  }, [dailyPuzzleIndex]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Get current puzzle data (safe to access even when loading)
   const currentPuzzle = puzzlesData.length > 0 ? puzzlesData[currentPuzzleIndex] : null;
   const PUZZLE_DATA = currentPuzzle ? currentPuzzle.categories.map(cat => ({
