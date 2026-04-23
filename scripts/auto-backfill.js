@@ -61,21 +61,6 @@ function normalizeDate(dateStr) {
 }
 
 /**
- * Get the maximum puzzle ID from existing puzzles
- */
-function getMaxPuzzleId(puzzles) {
-    const puzzleIds = puzzles
-        .map(p => p.id)
-        .filter(id => id != null && !isNaN(id));
-    
-    if (puzzleIds.length === 0) {
-        return 0;
-    }
-    
-    return Math.max(...puzzleIds);
-}
-
-/**
  * Check which puzzles from the last N days are missing
  */
 function getMissingDates() {
@@ -100,10 +85,6 @@ function getMissingDates() {
         }
     }
 
-    // Calculate the maximum puzzle ID to determine earliest valid puzzle
-    const maxPuzzleId = getMaxPuzzleId(existingPuzzles);
-    console.log(`  Max puzzle ID: #${maxPuzzleId}`);
-    
     // Build set of existing dates (normalized to ISO format)
     const existingDates = new Set(
         existingPuzzles
@@ -111,35 +92,15 @@ function getMissingDates() {
             .filter(d => d && d.includes('-')) // Only valid ISO dates
     );
     
-    // Build set of existing puzzle IDs
-    const existingIds = new Set(
-        existingPuzzles
-            .map(p => p.id)
-            .filter(id => id != null && !isNaN(id))
-    );
-    
     console.log(`  Found ${existingDates.size} existing puzzles with valid dates`);
-    console.log(`  Found ${existingIds.size} existing puzzles with IDs`);
     
-    // Check last N days, but only if puzzle number would be valid (> 0)
+    // Check last N days using date-based lookup only.
+    // ID-based estimation (maxPuzzleId - i) is unreliable when the Docker image is
+    // stale: the highest stored ID belongs to a past date, not today, so every
+    // estimated ID falls within the already-known range and every day is falsely
+    // reported as "found".
     const missingDays = [];
     for (let i = 0; i < DAYS_TO_CHECK; i++) {
-        // Calculate what the puzzle number would be for this day
-        const estimatedPuzzleNum = maxPuzzleId - i;
-        
-        // Skip if this would be before puzzle #1
-        if (estimatedPuzzleNum <= 0) {
-            console.log(`  ⏭️  Skipping: ${i} days ago (would be puzzle #${estimatedPuzzleNum}, before first puzzle)`);
-            continue;
-        }
-        
-        // Check if we already have this puzzle by ID (more reliable than date)
-        if (existingIds.has(estimatedPuzzleNum)) {
-            console.log(`  ✓  Found: puzzle #${estimatedPuzzleNum} (${i} days ago)`);
-            continue;
-        }
-        
-        // Fallback: also check by date in case puzzle numbering is off
         const dateStr = getDateString(i);
         if (existingDates.has(dateStr)) {
             console.log(`  ✓  Found: ${dateStr} (${i} days ago)`);
@@ -148,7 +109,7 @@ function getMissingDates() {
         
         // Missing - add to backfill list
         missingDays.push(i);
-        console.log(`  ⚠️  Missing: puzzle #${estimatedPuzzleNum} / ${dateStr} (${i} days ago)`);
+        console.log(`  ⚠️  Missing: ${dateStr} (${i} days ago)`);
     }
     
     return missingDays;
@@ -233,6 +194,9 @@ async function main() {
     const collectionPath = path.join(__dirname, '../data/collected-puzzles.json');
     const dataDir = path.join(__dirname, '../data');
     
+    // Track whether today was already fetched as part of bootstrapping so we don't double-scrape it.
+    let todayAlreadyFetchedDuringBootstrap = false;
+
     if (!fs.existsSync(collectionPath)) {
         console.log('\n⚠️  Collection file not found. Fetching today\'s puzzle first to bootstrap...');
         console.log(`   Looking for: ${collectionPath}`);
@@ -248,6 +212,7 @@ async function main() {
             console.log('\n⚠️  Failed to fetch today\'s puzzle. Cannot proceed with backfill.');
             process.exit(1);
         }
+        todayAlreadyFetchedDuringBootstrap = true;
         
         // Wait a bit before backfilling
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -256,8 +221,8 @@ async function main() {
     let successCount = 0;
     let failCount = 0;
     
-    // Scrape missing puzzles one by one (skip day 0 if we just fetched it)
-    const daysToFetch = missingDays.filter(d => d !== 0 || !fs.existsSync(collectionPath));
+    // Scrape all missing days; skip day 0 only if we just bootstrapped it above.
+    const daysToFetch = missingDays.filter(d => !(d === 0 && todayAlreadyFetchedDuringBootstrap));
     for (const daysAgo of daysToFetch) {
         const success = await scrapePuzzle(daysAgo);
         if (success) {
