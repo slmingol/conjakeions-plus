@@ -9,6 +9,7 @@ const getDefaultGameState = () => ({
   solved: [],
   mistakes: 0,
   revealed: false,
+  isPlayingDaily: true,
   version: STATE_VERSION,
 });
 
@@ -81,7 +82,7 @@ export const hasSavedGame = () => {
 export const useGameState = () => {
   const [savedState, setSavedState] = useState(loadGameState);
 
-  const saveState = (currentPuzzleIndex, solved, mistakes, revealed, gameOver) => {
+  const saveState = (currentPuzzleIndex, solved, mistakes, revealed, gameOver, isPlayingDaily = true) => {
     // Only save if game is in progress (not won/lost/revealed)
     if (!gameOver && !revealed) {
       const state = {
@@ -89,6 +90,7 @@ export const useGameState = () => {
         solved,
         mistakes,
         revealed,
+        isPlayingDaily,
       };
       setSavedState(state);
       saveGameState(state);

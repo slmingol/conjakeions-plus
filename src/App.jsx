@@ -36,12 +36,15 @@ function App() {
   const { savedState, saveState, clearState } = useGameState();
   const { recordAttempt, recordCompletion, getPuzzleStats, hasPlayedBefore, hasWonBefore, getTotalPuzzlesAttempted, getTotalPuzzlesWon, resetHistory } = usePuzzleHistory();
   const { theme, setTheme } = useTheme();
-  const { dailyPuzzleIndex, isPlayingDaily, returnToDaily, setBrowseMode } = useDailyPuzzle(puzzlesData);
+  const { dailyPuzzleIndex, isPlayingDaily, returnToDaily, setBrowseMode } = useDailyPuzzle(puzzlesData, savedState.isPlayingDaily ?? true);
   
-  // Initialize with daily puzzle if no saved state, otherwise use saved state
-  const initialPuzzleIndex = savedState.currentPuzzleIndex !== 0 || savedState.solved.length > 0 || savedState.mistakes > 0
+  // Initialize with saved puzzle if user was in browse mode or had in-progress daily puzzle.
+  // Otherwise use daily index (which starts at 0 and is corrected by the sync effect below).
+  const initialPuzzleIndex = (savedState.isPlayingDaily === false)
     ? savedState.currentPuzzleIndex
-    : dailyPuzzleIndex;
+    : (savedState.solved.length > 0 || savedState.mistakes > 0)
+      ? savedState.currentPuzzleIndex
+      : dailyPuzzleIndex;
   
   const [currentPuzzleIndex, setCurrentPuzzleIndex] = useState(initialPuzzleIndex);
   const [puzzleNumberInput, setPuzzleNumberInput] = useState('');
@@ -62,7 +65,9 @@ function App() {
   // On mount, puzzlesData is empty so dailyPuzzleIndex starts at 0 (its initial useState value).
   // Once puzzles load, useDailyPuzzle recalculates dailyPuzzleIndex to the correct day's index,
   // but useState(initialPuzzleIndex) has already captured 0. This effect corrects that.
-  // savedState and isPlayingDaily are intentionally omitted from deps: dailyPuzzleIndex changes
+  // Only fires when user is in daily mode with no saved progress (browse mode is preserved via
+  // isPlayingDaily=false persisted in localStorage).
+  // savedState is intentionally omitted from deps: dailyPuzzleIndex changes
   // only once (0 → correct index after async load) so the closure values are current at that point.
   useEffect(() => {
     const hasSavedProgress = savedState.solved.length > 0 || savedState.mistakes > 0;
@@ -134,8 +139,8 @@ function App() {
 
   // Save game state whenever it changes
   useEffect(() => {
-    saveState(currentPuzzleIndex, solved, mistakes, revealed, gameOver);
-  }, [currentPuzzleIndex, solved, mistakes, revealed, gameOver]);
+    saveState(currentPuzzleIndex, solved, mistakes, revealed, gameOver, isPlayingDaily);
+  }, [currentPuzzleIndex, solved, mistakes, revealed, gameOver, isPlayingDaily]);
 
   // Check if game is won
   useEffect(() => {
