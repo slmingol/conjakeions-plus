@@ -31,13 +31,15 @@ async function getTodaysPuzzle(daysAgo = 0) {
         console.log(`[${new Date().toISOString()}] Starting puzzle scrape (${daysAgo} days ago)...`);
         
         // Use system chromium if available (for Docker containers)
-        const launchOptions = { 
-            headless: true
+        const launchOptions = {
+            headless: true,
+            timeout: 30000,
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
         };
         if (process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH) {
             launchOptions.executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
         }
-        
+
         browser = await chromium.launch(launchOptions);
         
         context = await browser.newContext({

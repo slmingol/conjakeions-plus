@@ -11,10 +11,13 @@ if [ -f /usr/share/nginx/html/version.txt ]; then
     echo ""
 fi
 
-# Run auto-backfill to ensure last 7 days are present
-echo "🔄 Checking for missing puzzles (last 7 days)..."
+# Start auto-backfill in the background so nginx comes up immediately
+echo "🔄 Starting auto-backfill in background (last 7 days)..."
 cd /app
-node scripts/auto-backfill.js || echo "⚠️  Auto-backfill had issues, continuing anyway..."
+node scripts/auto-backfill.js > /var/log/auto-backfill.log 2>&1 &
+BACKFILL_PID=$!
+echo "   Backfill PID: $BACKFILL_PID"
+echo "   Logs: /var/log/auto-backfill.log"
 echo ""
 
 # Start the puzzle scheduler in the background
