@@ -443,11 +443,11 @@
                     <option value="not-attempted">Not Attempted</option>
                 </select>
             </div>
-            <input 
-                type="text" 
-                id="search-input" 
-                class="search-input" 
-                placeholder="Search by date or puzzle #..."
+            <input
+                type="text"
+                id="search-input"
+                class="search-input"
+                placeholder="Search by date, puzzle #, category, or word..."
             >
         </div>
 
@@ -469,8 +469,8 @@
             <div class="page-size-selector">
                 <label for="page-size">Per page:</label>
                 <select id="page-size">
-                    <option value="10" selected>10</option>
-                    <option value="50">50</option>
+                    <option value="10">10</option>
+                    <option value="50" selected>50</option>
                     <option value="100">100</option>
                     <option value="200">200</option>
                     <option value="500">500</option>
@@ -521,7 +521,7 @@
         let filteredPuzzles = [];
         let puzzleHistory = {};
         let currentPage = 1;
-        let pageSize = 10;
+        let pageSize = 50;
 
         const PUZZLE_HISTORY_KEY = 'conjakeions-plus-puzzle-history';
 
@@ -604,12 +604,14 @@
                 });
             }
 
-            // Apply search filter
+            // Apply search filter — date, ID, category names, and individual words
             if (searchTerm) {
                 filteredPuzzles = filteredPuzzles.filter(puzzle => {
-                    return (
-                        puzzle.date.includes(searchTerm) ||
-                        puzzle.id.toString().includes(searchTerm)
+                    if (puzzle.date.toLowerCase().includes(searchTerm)) return true;
+                    if (puzzle.id.toString().includes(searchTerm)) return true;
+                    return puzzle.categories.some(cat =>
+                        cat.name.toLowerCase().includes(searchTerm) ||
+                        cat.words.some(w => w.toLowerCase().includes(searchTerm))
                     );
                 });
             }
