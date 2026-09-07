@@ -20,6 +20,33 @@ const DIFFICULTY_COLORS = {
     13: '#BA81C5'  // Purple - Tricky
 };
 
+function writeScraperStatus(success, puzzleData) {
+    try {
+        const statusPath = path.join(__dirname, '../data/scraper-status.json');
+        let existing = {};
+        if (fs.existsSync(statusPath)) {
+            try { existing = JSON.parse(fs.readFileSync(statusPath, 'utf8')); } catch (_) {}
+        }
+        const now = new Date().toISOString();
+        const status = {
+            lastAttempted: now,
+            lastSuccess: success ? now : (existing.lastSuccess || null),
+            success,
+            lastPuzzleId: puzzleData?.id || null,
+            lastPuzzleDate: puzzleData?.date || null,
+            categoriesExtracted: puzzleData?.categories?.length || 0,
+        };
+        const dataDir = path.join(__dirname, '../data');
+        if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+        fs.writeFileSync(statusPath, JSON.stringify(status, null, 2));
+        if (fs.existsSync('/usr/share/nginx/html')) {
+            fs.writeFileSync('/usr/share/nginx/html/scraper-status.json', JSON.stringify(status, null, 2));
+        }
+    } catch (err) {
+        console.log(`  ⚠️ Could not write scraper status: ${err.message}`);
+    }
+}
+
 /**
  * Get a puzzle from connectionsplus.io by playing to reveal solution
  * @param {number} daysAgo - How many days ago (0 = today, 1 = yesterday, etc.)
@@ -450,17 +477,18 @@ async function getTodaysPuzzle(daysAgo = 0) {
         console.log('Waiting for categories to render...');
         await page.waitForTimeout(3000);
         
-        // Save page HTML for debugging
+        // Save page HTML for debugging — named by puzzle ID so re-runs don't clobber prior debug files
         try {
             const htmlContent = await page.content();
-            const htmlPath = path.join(__dirname, '../debug-page.html');
-            fs.writeFileSync(htmlPath, htmlContent);
-            console.log(`Debug HTML saved to ${htmlPath}`);
-            // Also write to nginx html dir if running in container
-            const nginxHtml = '/usr/share/nginx/html/debug-page.html';
+            const puzzleTag = metadata.id || 'unknown';
+            const namedFile = `debug-page-${puzzleTag}.html`;
+            fs.writeFileSync(path.join(__dirname, `../${namedFile}`), htmlContent);
+            fs.writeFileSync(path.join(__dirname, '../debug-page.html'), htmlContent); // latest alias
+            console.log(`Debug HTML saved to ${namedFile} (and debug-page.html alias)`);
             if (fs.existsSync('/usr/share/nginx/html')) {
-                fs.writeFileSync(nginxHtml, htmlContent);
-                console.log(`Debug HTML also at ${nginxHtml} (browse to /debug-page.html)`);
+                fs.writeFileSync(`/usr/share/nginx/html/${namedFile}`, htmlContent);
+                fs.writeFileSync('/usr/share/nginx/html/debug-page.html', htmlContent);
+                console.log(`Debug HTML at /${namedFile} and /debug-page.html`);
             }
         } catch (err) {
             console.log(`  ⚠️ Could not save debug HTML: ${err.message}`);
@@ -708,15 +736,17 @@ async function getTodaysPuzzle(daysAgo = 0) {
                 console.log(`  ${idx + 1}. [Difficulty ${cat.difficulty}] ${cat.name}`);
                 console.log(`     ${cat.words.join(', ')}`);
             });
-            
+            writeScraperStatus(true, puzzleData);
             return puzzleData;
         } else {
             console.log(`Warning: Only found ${puzzleData.categories.length} categories (expected 4)`);
+            writeScraperStatus(false, puzzleData);
             return puzzleData.categories.length > 0 ? puzzleData : null;
         }
-        
+
     } catch (error) {
         console.error('Error fetching daily puzzle:', error.message);
+        writeScraperStatus(false, null);
         if (browser) await browser.close();
         return null;
     }

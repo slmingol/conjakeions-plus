@@ -191,6 +191,40 @@
             min-width: 250px;
         }
 
+        .scraper-banner {
+            background: #744210;
+            color: #fefcbf;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        [data-theme="light"] .scraper-banner {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .match-detail {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            font-style: italic;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .match-detail mark {
+            background: transparent;
+            color: var(--accent);
+            font-weight: 600;
+            font-style: normal;
+        }
+
         .puzzle-list {
             background: var(--bg-secondary);
             border-radius: 8px;
@@ -451,6 +485,7 @@
             >
         </div>
 
+        <div id="scraper-banner" style="display:none;" class="scraper-banner"></div>
         <div id="loading" class="loading">Loading puzzles...</div>
         <div id="no-results" class="no-results" style="display: none;">
             No puzzles found matching your filters.
@@ -672,10 +707,29 @@
                 
                 // Get difficulty colors from categories (sorted by difficulty)
                 const sortedCategories = [...puzzle.categories].sort((a, b) => a.difficulty - b.difficulty);
-                const difficultyDots = sortedCategories.map(cat => 
+                const difficultyDots = sortedCategories.map(cat =>
                     `<div class="difficulty-dot" style="background-color: ${cat.color};" title="Difficulty ${cat.difficulty}"></div>`
                 ).join('');
-                
+
+                // Show matched category/word detail when a search term is active
+                let matchDetail = '';
+                if (searchTerm) {
+                    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const re = new RegExp(`(${esc(searchTerm)})`, 'gi');
+                    const matchedCats = puzzle.categories.filter(cat =>
+                        cat.name.toLowerCase().includes(searchTerm) ||
+                        cat.words.some(w => w.toLowerCase().includes(searchTerm))
+                    );
+                    if (matchedCats.length > 0) {
+                        const detail = matchedCats.map(cat => {
+                            const name = cat.name.replace(re, '<mark>$1</mark>');
+                            const words = cat.words.map(w => w.replace(re, '<mark>$1</mark>')).join(', ');
+                            return `${name}: ${words}`;
+                        }).join(' · ');
+                        matchDetail = `<div class="match-detail">${detail}</div>`;
+                    }
+                }
+
                 return `
                     <div class="puzzle-row" onclick="openPuzzle(${puzzle.id})">
                         <div class="puzzle-date">
@@ -683,6 +737,7 @@
                         </div>
                         <div class="puzzle-info">
                             <div class="difficulty-dots">${difficultyDots}</div>
+                            ${matchDetail}
                         </div>
                         <div class="puzzle-id">#${puzzle.id}</div>
                     </div>
@@ -807,8 +862,27 @@
             renderPagination();
         });
 
+        // Check scraper health — warn if last successful scrape is >48h ago
+        async function checkScraperStatus() {
+            try {
+                const res = await fetch('/scraper-status.json');
+                if (!res.ok) return;
+                const status = await res.json();
+                const lastSuccess = status.lastSuccess ? new Date(status.lastSuccess) : null;
+                if (!lastSuccess) return;
+                const hoursAgo = (Date.now() - lastSuccess.getTime()) / 36e5;
+                if (hoursAgo > 48) {
+                    const daysAgo = Math.floor(hoursAgo / 24);
+                    const banner = document.getElementById('scraper-banner');
+                    banner.innerHTML = `⚠️ Archive may be out of date — last successful scrape was ${daysAgo} day${daysAgo !== 1 ? 's' : ''} ago`;
+                    banner.style.display = 'flex';
+                }
+            } catch (_) {}
+        }
+
         // Initialize
         loadPuzzles();
+        checkScraperStatus();
     </script>
 </body>
 </html>
