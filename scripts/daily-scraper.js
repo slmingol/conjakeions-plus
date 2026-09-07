@@ -634,8 +634,9 @@ async function getTodaysPuzzle(daysAgo = 0) {
                         if (!text || text.toLowerCase().includes('reveal')) continue;
 
                         const isBold = fw === 'bold' || parseInt(fw) >= 600;
-                        if (isBold && text.length > 3) {
+                        if (isBold && text.length > 1) {
                             // Category names CAN contain commas (e.g. '"COLD" THINGS, IN IDIOMS')
+                            // and can be short abbreviations (e.g. 'PJS' = 3 chars)
                             if (!categoryName) categoryName = text;
                         } else if (!isBold && text.includes(',') && !words.length) {
                             const parsed = text.split(',').map(w => w.trim()).filter(w => w.length > 0);
