@@ -48,39 +48,47 @@ function main() {
     const collectedPuzzles = collectedData?.puzzles || [];
     console.log(`Loaded ${collectedPuzzles.length} collected puzzles`);
     
-    // Create a map of existing puzzle IDs from static collection
+    // Collected puzzles take priority over static (allows re-scrape to fix corrupted entries)
+    const collectedById = new Map(collectedPuzzles.map(p => [p.id, p]));
+
+    const overridden = [];
+    const merged = staticPuzzles.map(p => {
+        if (collectedById.has(p.id)) {
+            overridden.push(p.id);
+            return collectedById.get(p.id);
+        }
+        return p;
+    });
+
     const existingIds = new Set(staticPuzzles.map(p => p.id));
-    
-    // Add new collected puzzles that don't exist in static collection
     const newPuzzles = collectedPuzzles.filter(p => !existingIds.has(p.id));
-    
-    if (newPuzzles.length > 0) {
-        console.log(`Found ${newPuzzles.length} new puzzles to add`);
-        
-        // Combine: static puzzles + new scraped puzzles
-        const combined = [...staticPuzzles, ...newPuzzles];
-        
-        // Sort by ID (ascending)
-        combined.sort((a, b) => a.id - b.id);
-        
+    const combined = [...merged, ...newPuzzles];
+    combined.sort((a, b) => a.id - b.id);
+
+    const changed = overridden.length > 0 || newPuzzles.length > 0;
+
+    if (overridden.length > 0) console.log(`Overriding ${overridden.length} existing puzzle(s) with collected versions: ${overridden.join(', ')}`);
+    if (newPuzzles.length > 0) console.log(`Found ${newPuzzles.length} new puzzle(s) to add`);
+
+    if (changed) {
         // Update src/puzzles.json (for dev builds)
         fs.writeFileSync(staticPath, JSON.stringify(combined, null, 2));
         console.log(`✓ Updated ${staticPath}`);
-        
+
         // Update public/puzzles.json (for direct serving - dev environment only)
         if (fs.existsSync(publicDir)) {
             const publicPath = path.join(publicDir, 'puzzles.json');
             fs.writeFileSync(publicPath, JSON.stringify(combined, null, 2));
             console.log(`✓ Updated ${publicPath}`);
         }
-        
+
         // In container, update nginx served puzzles.json
         if (isContainer && fs.existsSync(nginxPublicDir)) {
             const nginxPuzzlesPath = path.join(nginxPublicDir, 'puzzles.json');
             fs.writeFileSync(nginxPuzzlesPath, JSON.stringify(combined, null, 2));
             console.log(`✓ Updated ${nginxPuzzlesPath} (nginx)`);
         }
-        
+
         console.log(`Total puzzles: ${combined.length}`);
     } else {
         console.log('No new puzzles to merge');
