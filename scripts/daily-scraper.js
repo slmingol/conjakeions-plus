@@ -363,7 +363,7 @@ async function getTodaysPuzzle(daysAgo = 0) {
         if (!gameFullySolved && categoriesAlreadyVisible < 4) {
             // CRITICAL: After 4 mistakes, a modal appears that must be closed first!
             console.log('Waiting for modal and looking for "Close" button...');
-            
+
             try {
                 // Wait for Close button to appear (use aria-label check from codegen)
                 await page.getByRole('button', { name: 'Close' }).click({ timeout: 5000 });
@@ -372,15 +372,15 @@ async function getTodaysPuzzle(daysAgo = 0) {
             } catch (err) {
                 console.log('  No "Close" button found (modal may be auto-dismissed)');
             }
-            
+
             // Now the "Reveal Answer" button should be visible
             console.log('Looking for "Reveal Answer" button...');
-            
+
             try {
                 await page.getByRole('button', { name: 'Reveal Answer' }).click({ timeout: 5000 });
                 console.log('  ✓ Clicked "Reveal Answer" button');
                 await page.waitForTimeout(2000);
-                
+
                 // On archive puzzles, a "Nice try!" modal appears after revealing
                 console.log('Checking for post-reveal modal...');
                 try {
@@ -397,20 +397,88 @@ async function getTodaysPuzzle(daysAgo = 0) {
         } else {
             console.log('  ✓ All categories already revealed (game was solved during attempts)');
         }
-        
+
+        // Click any "Click/Tap to reveal a word" buttons — site now hides individual words
+        // behind per-word reveal buttons even after the main "Reveal Answer" is clicked.
+        console.log('Clicking any hidden word reveal buttons...');
+        try {
+            for (let pass = 0; pass < 3; pass++) {
+                const revealBtns = await page.locator('button, [role="button"]')
+                    .filter({ hasText: /reveal a word/i }).all();
+                if (revealBtns.length === 0) break;
+                console.log(`  Pass ${pass + 1}: found ${revealBtns.length} reveal button(s)`);
+                for (const btn of revealBtns) {
+                    try {
+                        if (await btn.isVisible()) {
+                            await btn.click();
+                            await page.waitForTimeout(200);
+                        }
+                    } catch (_) { /* stale element, skip */ }
+                }
+                await page.waitForTimeout(1000);
+            }
+        } catch (err) {
+            console.log(`  ⚠️ Error clicking reveal buttons: ${err.message}`);
+        }
+
         // Wait for categories to be revealed (they should all be visible now)
         console.log('Waiting for categories to render...');
         await page.waitForTimeout(3000);
         
+        // Save page HTML for debugging
+        try {
+            const htmlContent = await page.content();
+            const htmlPath = path.join(__dirname, '../debug-page.html');
+            fs.writeFileSync(htmlPath, htmlContent);
+            console.log(`Debug HTML saved to ${htmlPath}`);
+            // Also write to nginx html dir if running in container
+            const nginxHtml = '/usr/share/nginx/html/debug-page.html';
+            if (fs.existsSync('/usr/share/nginx/html')) {
+                fs.writeFileSync(nginxHtml, htmlContent);
+                console.log(`Debug HTML also at ${nginxHtml} (browse to /debug-page.html)`);
+            }
+        } catch (err) {
+            console.log(`  ⚠️ Could not save debug HTML: ${err.message}`);
+        }
+
+        // Strategy 0: extract from Next.js __NEXT_DATA__ or React component state
+        let nextDataCategories = null;
+        try {
+            nextDataCategories = await page.evaluate(() => {
+                // Try __NEXT_DATA__ (Next.js SSR payload)
+                const nextEl = document.getElementById('__NEXT_DATA__');
+                if (nextEl) {
+                    const data = JSON.parse(nextEl.textContent);
+                    // Walk the props tree looking for categories/puzzle arrays
+                    const json = JSON.stringify(data);
+                    const m = json.match(/"categories"\s*:\s*(\[.*?\](?:,|\}))/);
+                    if (m) {
+                        try { return JSON.parse(m[1]); } catch (_) {}
+                    }
+                }
+                // Try common window-level puzzle state keys
+                for (const key of ['__puzzle__', '__PUZZLE__', '__gameData__', '__state__']) {
+                    if (window[key]) return window[key].categories || null;
+                }
+                return null;
+            });
+            if (nextDataCategories) {
+                console.log(`Strategy 0 (Next.js state): found categories data`);
+            }
+        } catch (err) {
+            console.log(`  Strategy 0 failed: ${err.message}`);
+        }
+
         // Try multiple selectors to find all category divs
         let categoryDivs = [];
         const selectors = [
-            'div.css-jtgcyt',                    // Primary selector
+            'div.css-jtgcyt',                    // Legacy Chakra hash (may still work)
             '[class*="category"]',               // Any class containing "category"
-            'div[class*="css-"][class*="gyt"]',  // Partial class match
-            '.chakra-stack > div'                // Direct children of category container
+            'div[class*="css-"][class*="gyt"]',  // Partial Chakra hash match
+            '.chakra-stack > div',               // Direct children of category container
+            '[data-testid*="category"]',         // Test-id based
         ];
-        
+
         for (const selector of selectors) {
             const divs = await page.locator(selector).all();
             if (divs.length >= 4) {
@@ -419,20 +487,22 @@ async function getTodaysPuzzle(daysAgo = 0) {
                 break;
             }
         }
-        
+
         // If still no luck with selectors, try finding by content structure
         if (categoryDivs.length < 4) {
             console.log(`Only found ${categoryDivs.length} divs with known selectors, trying content-based search...`);
             const allDivs = await page.locator('div').all();
-            
+
             const potentialCategories = [];
             for (const div of allDivs) {
                 try {
                     const text = await div.textContent();
-                    // Category divs contain comma-separated words and are not too long
-                    if (text && text.includes(',') && text.length > 20 && text.length < 300) {
-                        const hasMultiCommas = (text.match(/,/g) || []).length >= 2;
-                        if (hasMultiCommas) {
+                    // Skip divs that still contain "reveal a word" — not fully revealed yet
+                    if (!text || text.toLowerCase().includes('reveal a word')) continue;
+                    if (text.length > 20 && text.length < 400) {
+                        const childCount = await div.locator('> *').count();
+                        // Category containers typically have 2 direct children (name + word list)
+                        if (childCount >= 2 && childCount <= 6) {
                             potentialCategories.push(div);
                         }
                     }
@@ -440,13 +510,13 @@ async function getTodaysPuzzle(daysAgo = 0) {
                     // Skip
                 }
             }
-            
+
             if (potentialCategories.length >= 4) {
-                console.log(`Found ${potentialCategories.length} potential category divs by content`);
-                categoryDivs = potentialCategories.slice(0, 4); // Take first 4
+                console.log(`Found ${potentialCategories.length} potential category divs by structure`);
+                categoryDivs = potentialCategories.slice(0, 4);
             }
         }
-        
+
         console.log(`Final category div count: ${categoryDivs.length}`);
         
         // Take a screenshot for debugging
@@ -456,23 +526,20 @@ async function getTodaysPuzzle(daysAgo = 0) {
         
         // Extract all revealed categories
         console.log('Extracting revealed categories...');
-        console.log(`Processing ${categoryDivs.length} category divs...`);
-        
+
         const puzzleData = {
             id: metadata.id,
             date: metadata.date,
             categories: []
         };
-        
-        // Create a Set to track words we've already captured to avoid duplicates
+
         const capturedWordKeys = new Set();
-        
+
         // If we captured categories during gameplay, use those first
         if (solvedCategories.length > 0) {
             console.log(`Using ${solvedCategories.length} categories captured during gameplay`);
             for (const cat of solvedCategories) {
-                const wordsKey = cat.words.sort().join(',');
-                capturedWordKeys.add(wordsKey);
+                capturedWordKeys.add([...cat.words].sort().join(','));
             }
             puzzleData.categories = solvedCategories.map((cat, idx) => ({
                 name: cat.name,
@@ -481,109 +548,122 @@ async function getTodaysPuzzle(daysAgo = 0) {
                 color: ['#F9DF6D', '#A0C35A', '#B0C4EF', '#BA81C5'][idx] || '#F9DF6D'
             }));
         }
-        
-        // Also try to extract from the DOM (for any missed or additional categories)
+
+        // Strategy 0: use Next.js state data if successfully extracted earlier
+        if (puzzleData.categories.length < 4 && nextDataCategories && Array.isArray(nextDataCategories)) {
+            console.log(`Strategy 0 (Next.js state): processing ${nextDataCategories.length} categories`);
+            for (const cat of nextDataCategories) {
+                const words = Array.isArray(cat.words) ? cat.words : (cat.answers || []);
+                const name = cat.name || cat.title || cat.category || '';
+                if (name && words.length === 4) {
+                    const wordsKey = [...words].sort().join(',');
+                    if (!capturedWordKeys.has(wordsKey)) {
+                        const difficulty = puzzleData.categories.length * 4 + 1;
+                        puzzleData.categories.push({
+                            name,
+                            words,
+                            difficulty,
+                            color: DIFFICULTY_COLORS[difficulty]
+                        });
+                        capturedWordKeys.add(wordsKey);
+                    }
+                }
+            }
+            console.log(`  Strategy 0 yielded ${puzzleData.categories.length} categories`);
+        }
+
+        // Strategies 1-3: scan DOM category divs for any still-missing categories
         console.log(`Scanning ${categoryDivs.length} DOM category divs for additional categories...`);
         for (let idx = 0; idx < categoryDivs.length; idx++) {
+            if (puzzleData.categories.length >= 4) break;
             const div = categoryDivs[idx];
-            
-            // Debug: log the full text content of this div
+
             const divText = (await div.textContent()).trim();
             console.log(`\nDiv ${idx + 1} text (first 100 chars): ${divText.substring(0, 100)}`);
-            
-            // Try multiple selector strategies
+
             let categoryName = null;
             let words = [];
-            
-            // Strategy 1: Look for .css-1gxnet and .css-z9cpgb
+
+            // Strategy 1: legacy Chakra hash class selectors (may still work)
             const categoryNameEl = div.locator('.css-1gxnet, p.chakra-text.css-1gxnet').first();
             const wordsEl = div.locator('.css-z9cpgb, p.chakra-text.css-z9cpgb').first();
-            
+
             if (await categoryNameEl.count() > 0 && await wordsEl.count() > 0) {
                 categoryName = (await categoryNameEl.textContent()).trim();
                 const wordsText = (await wordsEl.textContent()).trim();
                 words = wordsText.split(',').map(w => w.trim()).filter(w => w.length > 0);
-                console.log(`  Strategy 1 (selectors) found: ${categoryName} - ${words.length} words`);
-            } else {
-                // Strategy 2: Look for bold text within the div
-                // Category names are bold, word lists are regular weight
+                console.log(`  Strategy 1 (CSS selectors) found: ${categoryName} - ${words.length} words`);
+            }
+
+            // Strategy 2: evaluate each leaf text node via font-weight
+            if (!categoryName || words.length !== 4) {
                 console.log(`  Trying font-weight detection...`);
                 const allTextElements = await div.locator('p, span, div').all();
-                
+
                 for (const el of allTextElements) {
                     try {
-                        const fontWeight = await el.evaluate(node => {
-                            const style = window.getComputedStyle(node);
-                            return style.fontWeight;
-                        });
-                        const text = (await el.textContent()).trim();
-                        
-                        // Bold font weights are typically 600, 700, or 'bold'
-                        const isBold = fontWeight === 'bold' || parseInt(fontWeight) >= 600;
-                        
-                        if (isBold && text.length > 3) {
-                            // This might be the category name, possibly with word list concatenated
-                            if (!categoryName || text.length > categoryName.length) {
-                                categoryName = text;
-                                console.log(`    Found bold text (weight ${fontWeight}): "${text}"`);
-                            }
-                        } else if (!isBold && text.includes(',')) {
-                            // This is likely the word list (not bold, has commas)
-                            const parsedWords = text.split(',').map(w => w.trim()).filter(w => w.length > 0);
-                            if (parsedWords.length === 4 && !words.length) {
-                                words = parsedWords;
-                                console.log(`    Found word list (weight ${fontWeight}): ${words.join(', ')}`);
-                            }
+                        const { fw, text } = await el.evaluate(node => ({
+                            fw: window.getComputedStyle(node).fontWeight,
+                            text: node.textContent.trim()
+                        }));
+                        if (!text || text.toLowerCase().includes('reveal')) continue;
+
+                        const isBold = fw === 'bold' || parseInt(fw) >= 600;
+                        if (isBold && text.length > 3 && !text.includes(',')) {
+                            if (!categoryName) categoryName = text;
+                        } else if (!isBold && text.includes(',') && !words.length) {
+                            const parsed = text.split(',').map(w => w.trim()).filter(w => w.length > 0);
+                            if (parsed.length === 4) words = parsed;
                         }
-                    } catch (err) {
-                        // Skip elements that can't be evaluated
-                    }
+                    } catch (_) {}
                 }
-                
-                // If we found both, try to clean up category name if words are concatenated
-                if (categoryName && words.length === 4) {
-                    // Check if the first word appears in the category name (concatenated)
-                    const firstWord = words[0];
-                    const wordListStr = words.join(', ');
-                    
-                    // Try to find where the word list starts in the category name
-                    if (categoryName.includes(firstWord)) {
-                        const firstWordIndex = categoryName.indexOf(firstWord);
-                        if (firstWordIndex > 5) {  // Make sure there's actual category text before it
-                            const cleanCategoryName = categoryName.substring(0, firstWordIndex).trim();
-                            console.log(`    Cleaned category name: "${categoryName}" -> "${cleanCategoryName}"`);
-                            categoryName = cleanCategoryName;
-                        }
-                    }
-                }
-                
+
                 if (categoryName && words.length === 4) {
                     console.log(`  Strategy 2 (font-weight) found: ${categoryName} - ${words.length} words`);
                 } else {
                     console.log(`  Strategy 2 incomplete: categoryName="${categoryName}", words.length=${words.length}`);
                 }
             }
-            
+
+            // Strategy 3: parse raw div text — site renders [WORD1][WORD2]...[CAT NAME][WORD1]...
+            // After all reveal-buttons are clicked the text should be clean joined words.
+            if (!categoryName || words.length !== 4) {
+                console.log(`  Trying raw text parse (Strategy 3)...`);
+                // Strip "Click/Tap to reveal a word" noise
+                const cleaned = divText.replace(/click\s*\/?\s*tap\s+to\s+reveal\s+a\s+word/gi, '').trim();
+                // Split on uppercase word boundaries — connection words are all-caps
+                const tokens = cleaned.match(/[A-Z][A-Z0-9 ',.-]*/g) || [];
+                console.log(`  Strategy 3 tokens: ${JSON.stringify(tokens.slice(0, 10))}`);
+                // Heuristic: category name is a phrase; words are shorter tokens
+                if (tokens.length >= 5) {
+                    // Longest token is likely the category name
+                    const sorted = [...tokens].sort((a, b) => b.length - a.length);
+                    categoryName = sorted[0].trim();
+                    words = tokens.filter(t => t.trim() !== categoryName).slice(0, 4).map(t => t.trim());
+                    if (words.length === 4) {
+                        console.log(`  Strategy 3 found: ${categoryName} - ${words.join(', ')}`);
+                    } else {
+                        categoryName = null;
+                        words = [];
+                        console.log(`  Strategy 3 failed (${words.length} words)`);
+                    }
+                }
+            }
+
             if (categoryName && words.length === 4) {
-                // Check if we already captured this category (deduplicate)
-                const wordsKey = words.sort().join(',');
-                
+                const wordsKey = [...words].sort().join(',');
                 if (capturedWordKeys.has(wordsKey)) {
-                    console.log(`  Skipped div ${idx + 1}: Already captured (duplicate) - ${categoryName}`);
+                    console.log(`  Skipped div ${idx + 1}: duplicate`);
                 } else {
-                    console.log(`Category ${idx + 1}: ${categoryName} - ${words.join(', ')}`);
-                    
-                    // Difficulty: assign based on current category count
                     const difficulty = puzzleData.categories.length * 4 + 1;
-                    
                     puzzleData.categories.push({
                         name: categoryName,
-                        words: words,
-                        difficulty: difficulty,
+                        words,
+                        difficulty,
                         color: DIFFICULTY_COLORS[difficulty]
                     });
-                    
                     capturedWordKeys.add(wordsKey);
+                    console.log(`Category ${idx + 1}: ${categoryName} - ${words.join(', ')}`);
                 }
             } else {
                 console.log(`  Skipped div ${idx + 1}: categoryName=${categoryName}, words.length=${words.length}`);
