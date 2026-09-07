@@ -538,7 +538,7 @@ async function getTodaysPuzzle(daysAgo = 0) {
 
             if (potentialCategories.length >= 4) {
                 console.log(`Found ${potentialCategories.length} potential category divs by structure`);
-                categoryDivs = potentialCategories.slice(0, 4);
+                categoryDivs = potentialCategories; // process all; extraction loop filters non-categories
             }
         }
 
