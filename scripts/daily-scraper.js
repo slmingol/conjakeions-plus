@@ -165,18 +165,37 @@ async function getTodaysPuzzle(daysAgo = 0) {
         
         // Play the game: select 4 DIFFERENT words each time, submit, deselect - repeat until 4 mistakes
         console.log('Making guesses to accumulate 4 mistakes...');
-        
+
+        // Game word tiles are always displayed ALL-CAPS; control buttons (Submit, Shuffle, etc.) use mixed case.
+        // This avoids brittle Chakra-UI hash class selectors that change on every site deploy.
+        const CONTROL_TEXT_RE = /^(submit|shuffle|deselect(\s+all)?|organize|share|hints?|close|reveal|game|archive|community|create|play|random|next|back|tap|click|sign|log\s+in)$/i;
+
+        async function getGameTileTexts() {
+            return page.evaluate(() => {
+                return Array.from(document.querySelectorAll('button'))
+                    .filter(btn => {
+                        const t = btn.textContent.trim();
+                        return t.length > 0 && t.length <= 60 &&
+                               t === t.toUpperCase() && /[A-Z]/.test(t) &&
+                               btn.offsetParent !== null; // visible in layout
+                    })
+                    .map(btn => btn.textContent.trim());
+            });
+        }
+
         // Wait for word tiles to be present
-        // Word tiles have the specific class css-l7vr7s (distinct from control buttons)
         await page.waitForFunction(() => {
-            const buttons = Array.from(document.querySelectorAll('button.css-l7vr7s'));
-            return buttons.length >= 15; // Wait for at least 15 tiles
+            return Array.from(document.querySelectorAll('button'))
+                .filter(btn => {
+                    const t = btn.textContent.trim();
+                    return t.length > 0 && t.length <= 60 &&
+                           t === t.toUpperCase() && /[A-Z]/.test(t) &&
+                           btn.offsetParent !== null;
+                }).length >= 15;
         }, { timeout: 10000 });
-        
-        // Get all word tile buttons (they have the css-l7vr7s class)
-        const wordTiles = await page.locator('button.css-l7vr7s').all();
-        
-        console.log(`Found ${wordTiles.length} word tiles`);
+
+        const initialTileTexts = await getGameTileTexts();
+        console.log(`Found ${initialTileTexts.length} word tiles`);
         
         // Track which words we've already used across all attempts
         const usedWords = new Set();
@@ -197,60 +216,63 @@ async function getTodaysPuzzle(daysAgo = 0) {
             
             try {
                 // Re-query tiles before each attempt (they may be re-ordered after submit)
-                await page.waitForTimeout(500); // Small wait before querying
-                const currentTiles = await page.locator('button.css-l7vr7s').all();
-                const tileCountBefore = currentTiles.length;
+                await page.waitForTimeout(800); // Wait for any animation to settle
+                const allTileTexts = await getGameTileTexts();
+                const tileCountBefore = allTileTexts.length;
                 console.log(`  Found ${tileCountBefore} tiles available`);
-                
-                // Debug: log the text of all tiles
-                const allTileTexts = [];
-                for (const tile of currentTiles) {
-                    allTileTexts.push(await tile.textContent());
-                }
                 console.log(`  Tile texts:`, allTileTexts.join(', '));
-                
+
+                if (tileCountBefore === 0) {
+                    console.log('  No tiles found — game may be complete');
+                    break;
+                }
+
                 // Find 4 unused words
                 const wordsForThisAttempt = [];
-                for (const tile of currentTiles) {
+                for (const text of allTileTexts) {
                     if (wordsForThisAttempt.length >= 4) break;
-                    
-                    const text = await tile.textContent();
-                    const trimmed = text.trim();
-                    
-                    if (!usedWords.has(trimmed)) {
-                        wordsForThisAttempt.push(trimmed); // Store only text, not button
+                    if (!usedWords.has(text)) {
+                        wordsForThisAttempt.push(text);
                     }
                 }
-                
+
+                if (wordsForThisAttempt.length < 4) {
+                    console.log(`  Only ${wordsForThisAttempt.length} unused words — clearing used set`);
+                    usedWords.clear();
+                    wordsForThisAttempt.length = 0;
+                    for (const text of allTileTexts) {
+                        if (wordsForThisAttempt.length >= 4) break;
+                        wordsForThisAttempt.push(text);
+                    }
+                }
+
                 console.log(`  Selecting words:`, wordsForThisAttempt.join(', '));
-                
-                // Click each word by re-querying it (avoid stale locators)
+
+                // Click each word by text — no CSS class dependency
                 const clickedWords = [];
                 for (const wordText of wordsForThisAttempt) {
-                    // Escape special regex characters in word text
                     const escapedWord = wordText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                    // Re-query the tile by its text content
-                    const tile = page.locator('button.css-l7vr7s').filter({ hasText: new RegExp(`^${escapedWord}$`) });
-                    await tile.first().click();
+                    // Match button by exact text; game words are unique on the board
+                    const tile = page.locator('button').filter({ hasText: new RegExp(`^${escapedWord}$`) });
+                    await tile.first().click({ timeout: 10000 });
                     clickedWords.push(wordText);
                     usedWords.add(wordText);
                 }
-                
+
                 console.log(`  Selected ${clickedWords.length} words:`, clickedWords.join(', '));
                 await page.waitForTimeout(500);
-                
+
                 // Click Submit
                 await page.getByRole('button', { name: 'Submit' }).click();
                 console.log('  Clicked Submit');
-                
+
                 // Wait for DOM to update by checking tile count change
                 await page.waitForTimeout(1000);
                 let tileCountAfter = tileCountBefore;
                 let waitAttempts = 0;
                 while (tileCountAfter === tileCountBefore && waitAttempts < 10) {
                     await page.waitForTimeout(500);
-                    const tiles = await page.locator('button.css-l7vr7s').all();
-                    tileCountAfter = tiles.length;
+                    tileCountAfter = (await getGameTileTexts()).length;
                     waitAttempts++;
                 }
                 
@@ -262,62 +284,58 @@ async function getTodaysPuzzle(daysAgo = 0) {
                     // Wait longer and poll for categories to appear
                     await page.waitForTimeout(3000); // Longer wait for category animation
                     
-                    // Poll for category divs with multiple attempts
-                    let categoryDivs = [];
-                    for (let pollAttempt = 0; pollAttempt < 5; pollAttempt++) {
-                        categoryDivs = await page.locator('div.css-jtgcyt').all();
-                        if (categoryDivs.length > 0) break;
-                        await page.waitForTimeout(500);
-                    }
-                    
-                    // If still no divs found, try broader selectors
-                    if (categoryDivs.length === 0) {
-                        categoryDivs = await page.locator('[class*="category"], div[class*="css-j"]').all();
-                    }
-                    console.log(`  Found ${categoryDivs.length} category divs, have ${solvedCategories.length} captured so far`);
-                    
-                    // Try to extract from ALL visible category divs (not just the first one)
-                    for (const categoryDiv of categoryDivs) {
-                        try {
-                            // Get the full text and parse it
-                            const fullText = (await categoryDiv.textContent()).trim();
-                            
-                            // Try to find words using the words selector
-                            const wordsEl = categoryDiv.locator('.css-z9cpgb, p.chakra-text.css-z9cpgb').first();
-                            if (await wordsEl.count() > 0) {
-                                const wordsText = (await wordsEl.textContent()).trim();
-                                const words = wordsText.split(',').map(w => w.trim()).filter(w => w.length > 0);
-                                
-                                // Check if we already captured this category by comparing words
-                                const wordsKey = words.sort().join(',');
-                                const alreadyCaptured = solvedCategories.some(cat => 
-                                    cat.words.sort().join(',') === wordsKey
-                                );
-                                
-                                if (!alreadyCaptured && words.length === 4) {
-                                    // Extract category name by removing the words from the full text
-                                    let categoryName = fullText;
-                                    words.forEach(word => {
-                                        categoryName = categoryName.replace(word, '').replace(',', '');
-                                    });
-                                    categoryName = categoryName.trim();
-                                    
-                                    solvedCategories.push({
-                                        name: categoryName,
-                                        words: words
-                                    });
-                                    console.log(`  📦 Captured category ${solvedCategories.length}: ${categoryName} - ${words.join(', ')}`);
-                                } else if (alreadyCaptured) {
-                                    console.log(`  ⚠️ Category already captured (duplicate)`);
-                                }
+                    // Extract solved category data via page.evaluate (no CSS class dependency)
+                    const newCategories = await page.evaluate(() => {
+                        const results = [];
+                        // Find all divs that look like solved category cards:
+                        // - have a background color (yellow/green/blue/purple)
+                        // - contain a category name + 4 words
+                        const allDivs = Array.from(document.querySelectorAll('div, section, article'));
+                        for (const div of allDivs) {
+                            const style = window.getComputedStyle(div);
+                            const bg = style.backgroundColor;
+                            // Skip transparent/white/near-white backgrounds
+                            if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') continue;
+                            // Look for the Connections palette colors (rgb values)
+                            const isGameColor = [
+                                'rgb(249, 223, 109)', // yellow
+                                'rgb(160, 195, 90)',  // green
+                                'rgb(176, 196, 239)', // blue
+                                'rgb(186, 129, 197)', // purple
+                            ].some(c => bg.includes(c.slice(4, -1))); // compare r,g,b values loosely
+                            if (!isGameColor) continue;
+
+                            // Collect all leaf text nodes within this element
+                            const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+                            const texts = [];
+                            let node;
+                            while ((node = walker.nextNode())) {
+                                const t = node.textContent.trim();
+                                if (t) texts.push(t);
                             }
-                        } catch (err) {
-                            console.log(`  ⚠️ Error extracting category: ${err.message}`);
+
+                            // The category name is typically the first substantial non-word text;
+                            // words are uppercase tokens. Require exactly 4 uppercase tokens.
+                            const upperTokens = texts.filter(t => t === t.toUpperCase() && /[A-Z]/.test(t) && t.length < 60);
+                            const nameTokens = texts.filter(t => t !== t.toUpperCase() || !/[A-Z]/.test(t));
+                            if (upperTokens.length === 4 && nameTokens.length > 0) {
+                                results.push({ name: nameTokens[0].trim(), words: upperTokens });
+                            }
+                        }
+                        return results;
+                    });
+
+                    console.log(`  Found ${newCategories.length} category card(s) via background-color, have ${solvedCategories.length} captured so far`);
+                    for (const cat of newCategories) {
+                        const wordsKey = [...cat.words].sort().join(',');
+                        const alreadyCaptured = solvedCategories.some(c => [...c.words].sort().join(',') === wordsKey);
+                        if (!alreadyCaptured && cat.words.length === 4 && cat.name) {
+                            solvedCategories.push(cat);
+                            console.log(`  Captured category ${solvedCategories.length}: ${cat.name} - ${cat.words.join(', ')}`);
                         }
                     }
-                    
-                    if (categoryDivs.length === 0) {
-                        console.log(`  ⚠️ No category divs found after correct guess`);
+                    if (newCategories.length === 0) {
+                        console.log(`  No category cards found after correct guess`);
                     }
                     
                     // Clear used words since correct categories are removed from board
@@ -353,11 +371,18 @@ async function getTodaysPuzzle(daysAgo = 0) {
         
         // Check if categories are already visible (game was solved during attempts)
         console.log('Checking if categories are already revealed...');
-        let categoriesAlreadyVisible = await page.locator('div.css-jtgcyt').count();
+        // Use background-color detection (same logic as in-gameplay capture)
+        const categoriesAlreadyVisible = await page.evaluate(() => {
+            const GAME_COLORS = ['249, 223, 109', '160, 195, 90', '176, 196, 239', '186, 129, 197'];
+            return Array.from(document.querySelectorAll('div, section'))
+                .filter(el => {
+                    const bg = window.getComputedStyle(el).backgroundColor;
+                    return bg && GAME_COLORS.some(c => bg.includes(c));
+                }).length;
+        });
         console.log(`  Found ${categoriesAlreadyVisible} categories already visible`);
-        
-        // If game was fully solved, all 4 categories should already be visible
-        // Don't try to reveal answer if we already have all categories
+
+        // Don't try to reveal if we already captured all 4 during gameplay
         const gameFullySolved = categoriesAlreadyVisible >= 4 || solvedCategories.length >= 4;
         
         if (!gameFullySolved && categoriesAlreadyVisible < 4) {
@@ -377,8 +402,8 @@ async function getTodaysPuzzle(daysAgo = 0) {
             console.log('Looking for "Reveal Answer" button...');
 
             try {
-                await page.getByRole('button', { name: 'Reveal Answer' }).click({ timeout: 5000 });
-                console.log('  ✓ Clicked "Reveal Answer" button');
+                await page.getByRole('button', { name: /reveal/i }).click({ timeout: 5000 });
+                console.log('  ✓ Clicked reveal button');
                 await page.waitForTimeout(2000);
 
                 // On archive puzzles, a "Nice try!" modal appears after revealing
@@ -392,7 +417,7 @@ async function getTodaysPuzzle(daysAgo = 0) {
                 }
                 await page.waitForTimeout(1000);
             } catch (err) {
-                console.log('  ⚠️ "Reveal Answer" button not found');
+                console.log('  ⚠️ No reveal button found');
             }
         } else {
             console.log('  ✓ All categories already revealed (game was solved during attempts)');
