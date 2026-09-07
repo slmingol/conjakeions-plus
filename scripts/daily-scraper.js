@@ -634,7 +634,8 @@ async function getTodaysPuzzle(daysAgo = 0) {
                         if (!text || text.toLowerCase().includes('reveal')) continue;
 
                         const isBold = fw === 'bold' || parseInt(fw) >= 600;
-                        if (isBold && text.length > 3 && !text.includes(',')) {
+                        if (isBold && text.length > 3) {
+                            // Category names CAN contain commas (e.g. '"COLD" THINGS, IN IDIOMS')
                             if (!categoryName) categoryName = text;
                         } else if (!isBold && text.includes(',') && !words.length) {
                             const parsed = text.split(',').map(w => w.trim()).filter(w => w.length > 0);
@@ -652,7 +653,8 @@ async function getTodaysPuzzle(daysAgo = 0) {
 
             // Strategy 3: parse raw div text — site renders [WORD1][WORD2]...[CAT NAME][WORD1]...
             // After all reveal-buttons are clicked the text should be clean joined words.
-            if (!categoryName || words.length !== 4) {
+            // Skip if Strategy 2 found valid words — Strategy 3 guessing would overwrite good data.
+            if (words.length !== 4) {
                 console.log(`  Trying raw text parse (Strategy 3)...`);
                 // Strip "Click/Tap to reveal a word" noise
                 const cleaned = divText.replace(/click\s*\/?\s*tap\s+to\s+reveal\s+a\s+word/gi, '').trim();
