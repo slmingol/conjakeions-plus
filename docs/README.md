@@ -12,7 +12,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg)](https://www.docker.com/)
 [![Container Registry](https://img.shields.io/badge/GHCR-Published-blue)](https://github.com/slmingol/conjakeions-plus/pkgs/container/conjakeions-plus)
 
-A word puzzle game with **1,036+ unique puzzles** inspired by Connections. Features automated puzzle scraping, scheduled backfill, and Docker deployment.
+A word puzzle game with **1,184+ unique puzzles** inspired by Connections. Features automated puzzle scraping, scheduled backfill, and Docker deployment.
 
 ## About
 
@@ -33,7 +33,7 @@ Conjakeions+ is a word puzzle game where players must find groups of four words 
 - 🎊 Win/lose conditions with animations
 - 📱 Responsive design for mobile and desktop
 - 🔄 Play again functionality
-- 🎲 1,036+ unique puzzles (June 2023 - April 2026)
+- 🎲 1,184+ unique puzzles (June 2023 - present)
 - 🌈 4 difficulty levels with color-coded categories
 
 ### Puzzle Management
@@ -165,7 +165,7 @@ conjakeions-plus/
 │   └── deduplicate-puzzles.js  # Duplicate puzzle remover
 ├── src/
 │   ├── components/             # React components
-│   ├── puzzles.json            # 1,036+ puzzle collection
+│   ├── puzzles.json            # 1,184+ puzzle collection
 │   ├── App.jsx                 # Main game component
 │   └── main.jsx                # React entry point
 ├── docs/
@@ -285,6 +285,32 @@ docker exec conjakeions-plus node scripts/auto-backfill.js
 
 # Check collected puzzles
 docker exec conjakeions-plus cat data/collected-puzzles.json
+```
+
+### Scraper Stops Collecting (CSS Class Hash Change)
+
+connectionsplus.io uses Chakra UI, which generates hashed CSS class names that change on every site redeploy. When this happens the scraper extracts 0 categories and stops saving puzzles.
+
+Diagnose:
+```bash
+docker exec conjakeions-plus cat /var/log/scheduler.log | grep "Final categories"
+# Bad:  Final categories extracted: 0
+# Good: Final categories extracted: 4
+```
+
+The scraper uses semantic detection (uppercase text, background colors) rather than CSS class selectors to avoid this, but if the site's DOM structure changes significantly a fix may be needed in `scripts/daily-scraper.js`. Check the debug output:
+```bash
+# Browse to /debug-page.html on the running container to inspect the last scraped page
+# Or check the screenshot:
+docker cp conjakeions-plus:/app/debug-solution.png /tmp/debug-solution.png
+```
+
+To fix corrupted puzzle entries after a scraper bug:
+```bash
+# Re-scrape specific puzzle (N = days ago)
+docker exec conjakeions-plus node scripts/daily-scraper.js N
+docker exec conjakeions-plus node scripts/merge-puzzles.js
+# merge-puzzles now upserts: collected entries override static by puzzle ID
 ```
 
 ### Container Won't Start
