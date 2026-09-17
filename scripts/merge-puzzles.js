@@ -40,7 +40,11 @@ function main() {
     
     // Load static puzzles (from initial import)
     const staticPath = path.join(srcDir, 'puzzles.json');
-    const staticPuzzles = loadJSON(staticPath) || [];
+    const rawStatic = loadJSON(staticPath) || [];
+    const staticPuzzles = rawStatic.filter(p => p.id != null);
+    if (rawStatic.length !== staticPuzzles.length) {
+        console.log(`Skipped ${rawStatic.length - staticPuzzles.length} static puzzle(s) with null ID`);
+    }
     console.log(`Loaded ${staticPuzzles.length} static puzzles`);
     
     // Load collected puzzles (from scraping)
