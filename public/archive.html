@@ -678,6 +678,7 @@
             const listElement = document.getElementById('puzzle-list');
             const noResultsElement = document.getElementById('no-results');
             const paginationElement = document.getElementById('pagination');
+            const searchTerm = (document.getElementById('search-input').value || '').toLowerCase();
 
             if (filteredPuzzles.length === 0) {
                 listElement.style.display = 'none';
