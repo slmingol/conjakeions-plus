@@ -706,9 +706,10 @@
                 const statusIcon = completed ? (won ? '✅' : '❌') : (attempted ? '🔄' : '');
                 
                 // Get difficulty colors from categories (sorted by difficulty)
-                const sortedCategories = [...puzzle.categories].sort((a, b) => a.difficulty - b.difficulty);
+                const cats = Array.isArray(puzzle.categories) ? puzzle.categories : [];
+                const sortedCategories = [...cats].sort((a, b) => a.difficulty - b.difficulty);
                 const difficultyDots = sortedCategories.map(cat =>
-                    `<div class="difficulty-dot" style="background-color: ${cat.color};" title="Difficulty ${cat.difficulty}"></div>`
+                    `<div class="difficulty-dot" style="background-color: ${cat.color || '#ccc'};" title="Difficulty ${cat.difficulty}"></div>`
                 ).join('');
 
                 // Show matched category/word detail when a search term is active
@@ -716,9 +717,9 @@
                 if (searchTerm) {
                     const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
                     const re = new RegExp(`(${esc(searchTerm)})`, 'gi');
-                    const matchedCats = puzzle.categories.filter(cat =>
-                        cat.name.toLowerCase().includes(searchTerm) ||
-                        cat.words.some(w => w.toLowerCase().includes(searchTerm))
+                    const matchedCats = cats.filter(cat =>
+                        (cat.name || '').toLowerCase().includes(searchTerm) ||
+                        (cat.words || []).some(w => w.toLowerCase().includes(searchTerm))
                     );
                     if (matchedCats.length > 0) {
                         const detail = matchedCats.map(cat => {
